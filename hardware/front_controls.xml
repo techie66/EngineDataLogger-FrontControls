@@ -1,0 +1,1510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>/home/jacob/EngineDataLogger-FrontControls/hardware/front_controls.sch</source>
+    <date>Tue 08 Sep 2020 10:10:22 AM EDT</date>
+    <tool>Eeschema 5.1.4+dfsg1-1~bpo10+1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Front Controls (CB1100F)</title>
+        <company/>
+        <rev>1</rev>
+        <date>2019-01-28</date>
+        <source>front_controls.sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C10">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFC51</tstamp>
+    </comp>
+    <comp ref="R29">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFCA6</tstamp>
+    </comp>
+    <comp ref="R23">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFD23</tstamp>
+    </comp>
+    <comp ref="R17">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFD6A</tstamp>
+    </comp>
+    <comp ref="D19">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFDD3</tstamp>
+    </comp>
+    <comp ref="D13">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFE10</tstamp>
+    </comp>
+    <comp ref="C9">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502ED7</tstamp>
+    </comp>
+    <comp ref="R28">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502EDE</tstamp>
+    </comp>
+    <comp ref="R22">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502EE5</tstamp>
+    </comp>
+    <comp ref="R16">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502EEC</tstamp>
+    </comp>
+    <comp ref="D18">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502EF3</tstamp>
+    </comp>
+    <comp ref="D12">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C502EFA</tstamp>
+    </comp>
+    <comp ref="C8">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A3A</tstamp>
+    </comp>
+    <comp ref="R27">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A41</tstamp>
+    </comp>
+    <comp ref="R21">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A48</tstamp>
+    </comp>
+    <comp ref="R15">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A4F</tstamp>
+    </comp>
+    <comp ref="D17">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A56</tstamp>
+    </comp>
+    <comp ref="D11">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503A5D</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E0F</tstamp>
+    </comp>
+    <comp ref="R26">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E16</tstamp>
+    </comp>
+    <comp ref="R20">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E1D</tstamp>
+    </comp>
+    <comp ref="R14">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E24</tstamp>
+    </comp>
+    <comp ref="D16">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E2B</tstamp>
+    </comp>
+    <comp ref="D10">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C503E32</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50496D</tstamp>
+    </comp>
+    <comp ref="R25">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504974</tstamp>
+    </comp>
+    <comp ref="R19">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50497B</tstamp>
+    </comp>
+    <comp ref="R13">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504982</tstamp>
+    </comp>
+    <comp ref="D15">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504989</tstamp>
+    </comp>
+    <comp ref="D9">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504990</tstamp>
+    </comp>
+    <comp ref="C5">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DA5</tstamp>
+    </comp>
+    <comp ref="R24">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DAC</tstamp>
+    </comp>
+    <comp ref="R18">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DB3</tstamp>
+    </comp>
+    <comp ref="R12">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DBA</tstamp>
+    </comp>
+    <comp ref="D14">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DC1</tstamp>
+    </comp>
+    <comp ref="D8">
+      <value>4.7</value>
+      <footprint>Diode_SMD:D_SMB</footprint>
+      <fields>
+        <field name="LCSC">C188530</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C504DC8</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>Adafruit_Metro_Mini</value>
+      <footprint>Adafruit:DIP-28_W15.24mm</footprint>
+      <libsource lib="front_controls-rescue" part="Adafruit_Metro_Mini" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C4FFB90</tstamp>
+    </comp>
+    <comp ref="R10">
+      <value>10</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25077</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50B7A1</tstamp>
+    </comp>
+    <comp ref="R11">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50B860</tstamp>
+    </comp>
+    <comp ref="D7">
+      <value>5.1</value>
+      <footprint>Diode_SMD:D_SOD-123</footprint>
+      <fields>
+        <field name="LCSC">C231290</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="ZENER" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50B92D</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50B9B8</tstamp>
+    </comp>
+    <comp ref="P2">
+      <value>CONN_01X10</value>
+      <footprint>Pin_Headers:Pin_Header_Straight_1x10</footprint>
+      <libsource lib="front_controls-rescue" part="CONN_01X10" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C50FC25</tstamp>
+    </comp>
+    <comp ref="D1">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C51145C</tstamp>
+    </comp>
+    <comp ref="D2">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5115EA</tstamp>
+    </comp>
+    <comp ref="R4">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5116B7</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5117FA</tstamp>
+    </comp>
+    <comp ref="R7">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C511923</tstamp>
+    </comp>
+    <comp ref="D3">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5122B3</tstamp>
+    </comp>
+    <comp ref="D4">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5122BA</tstamp>
+    </comp>
+    <comp ref="R5">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5122C1</tstamp>
+    </comp>
+    <comp ref="C2">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5122C8</tstamp>
+    </comp>
+    <comp ref="R8">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C5122CF</tstamp>
+    </comp>
+    <comp ref="D5">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C512608</tstamp>
+    </comp>
+    <comp ref="D6">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="D_Schottky" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C51260F</tstamp>
+    </comp>
+    <comp ref="R6">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C11702</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C512616</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>.01uf</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C15195</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="C" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C51261D</tstamp>
+    </comp>
+    <comp ref="R9">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="LCSC">C25741</field>
+      </fields>
+      <libsource lib="front_controls-rescue" part="R" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5C512624</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F01FA0D</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F02D977</tstamp>
+    </comp>
+    <comp ref="R3">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F033954</tstamp>
+    </comp>
+    <comp ref="R30">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F0399FA</tstamp>
+    </comp>
+    <comp ref="R31">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F0400B6</tstamp>
+    </comp>
+    <comp ref="R32">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F04639E</tstamp>
+    </comp>
+    <comp ref="R33">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F04C720</tstamp>
+    </comp>
+    <comp ref="R34">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F058050</tstamp>
+    </comp>
+    <comp ref="R35">
+      <value>500</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C25130</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F05E318</tstamp>
+    </comp>
+    <comp ref="Q1">
+      <value>Q_PNP_BEC</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C8326</field>
+      </fields>
+      <libsource lib="Device" part="Q_PNP_BEC" description="PNP transistor, base/emitter/collector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F181D3C</tstamp>
+    </comp>
+    <comp ref="D20">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="Device" part="D_Schottky" description="Schottky diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F2713C1</tstamp>
+    </comp>
+    <comp ref="D21">
+      <value>D_Schottky</value>
+      <footprint>Diode_SMD:D_SMC</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="LCSC">C35722</field>
+      </fields>
+      <libsource lib="Device" part="D_Schottky" description="Schottky diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F272D69</tstamp>
+    </comp>
+    <comp ref="J1">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4411DE</tstamp>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F44FBE1</tstamp>
+    </comp>
+    <comp ref="J3">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F45E1AA</tstamp>
+    </comp>
+    <comp ref="J4">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F46BCF3</tstamp>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F47981F</tstamp>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F48854B</tstamp>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F496435</tstamp>
+    </comp>
+    <comp ref="J8">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4A432F</tstamp>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_01x02</value>
+      <footprint>Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4B21A3</tstamp>
+    </comp>
+    <comp ref="U6">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFC23F5</tstamp>
+    </comp>
+    <comp ref="U10">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFDD48B</tstamp>
+    </comp>
+    <comp ref="U9">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFD6957</tstamp>
+    </comp>
+    <comp ref="U8">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFCFEC3</tstamp>
+    </comp>
+    <comp ref="U7">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFC92D1</tstamp>
+    </comp>
+    <comp ref="U5">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFBBD85</tstamp>
+    </comp>
+    <comp ref="U4">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFB5259</tstamp>
+    </comp>
+    <comp ref="U3">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFA84B7</tstamp>
+    </comp>
+    <comp ref="U2">
+      <value>G3VM-31BR</value>
+      <footprint>G3VM-31BR:DIP762W50P254L737H485Q6</footprint>
+      <datasheet>IPC-7251</datasheet>
+      <fields>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <libsource lib="G3VM-31BR" part="G3VM-31BR" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EFA1D1D</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector_Generic" part="Conn_01x02">
+      <description>Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D_Schottky">
+      <description>Schottky diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Q_PNP_BEC">
+      <description>PNP transistor, base/emitter/collector</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">Q_PNP_BEC</field>
+      </fields>
+      <pins>
+        <pin num="1" name="B" type="input"/>
+        <pin num="2" name="E" type="passive"/>
+        <pin num="3" name="C" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Small">
+      <description>Resistor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_Small</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="G3VM-31BR" part="G3VM-31BR">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">G3VM-31BR</field>
+        <field name="Footprint">G3VM-31BR:DIP762W50P254L737H485Q6</field>
+        <field name="Datasheet">IPC-7251</field>
+        <field name="Field4">OMRON</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+        <pin num="4" name="~" type="passive"/>
+        <pin num="5" name="~" type="passive"/>
+        <pin num="6" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="Adafruit_Metro_Mini">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">Adafruit_Metro_Mini</field>
+      </fields>
+      <pins>
+        <pin num="0" name="0" type="BiDi"/>
+        <pin num="1" name="1" type="BiDi"/>
+        <pin num="2" name="2" type="BiDi"/>
+        <pin num="3" name="3" type="BiDi"/>
+        <pin num="4" name="4" type="BiDi"/>
+        <pin num="5" name="5" type="BiDi"/>
+        <pin num="6" name="6" type="BiDi"/>
+        <pin num="7" name="7" type="BiDi"/>
+        <pin num="8" name="8" type="BiDi"/>
+        <pin num="9" name="9" type="BiDi"/>
+        <pin num="10" name="10" type="BiDi"/>
+        <pin num="11" name="11" type="BiDi"/>
+        <pin num="12" name="12" type="BiDi"/>
+        <pin num="13" name="13" type="BiDi"/>
+        <pin num="14" name="A5" type="BiDi"/>
+        <pin num="15" name="A4" type="BiDi"/>
+        <pin num="16" name="A3" type="BiDi"/>
+        <pin num="17" name="A2" type="BiDi"/>
+        <pin num="18" name="A1" type="BiDi"/>
+        <pin num="19" name="A0" type="BiDi"/>
+        <pin num="20" name="Aref" type="input"/>
+        <pin num="21" name="Vin" type="input"/>
+        <pin num="22" name="Gnd" type="power_out"/>
+        <pin num="23" name="Gnd" type="power_out"/>
+        <pin num="24" name="5V" type="power_out"/>
+        <pin num="25" name="3V" type="output"/>
+        <pin num="26" name="Rst" type="input"/>
+        <pin num="27" name="USB" type="output"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="C">
+      <footprints>
+        <fp>C?</fp>
+        <fp>C_????_*</fp>
+        <fp>C_????</fp>
+        <fp>SMD*_c</fp>
+        <fp>Capacitor*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="CONN_01X10">
+      <footprints>
+        <fp>Pin_Header_Straight_1X10</fp>
+        <fp>Pin_Header_Angled_1X10</fp>
+        <fp>Socket_Strip_Straight_1X10</fp>
+        <fp>Socket_Strip_Angled_1X10</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X10</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+        <pin num="2" name="P2" type="passive"/>
+        <pin num="3" name="P3" type="passive"/>
+        <pin num="4" name="P4" type="passive"/>
+        <pin num="5" name="P5" type="passive"/>
+        <pin num="6" name="P6" type="passive"/>
+        <pin num="7" name="P7" type="passive"/>
+        <pin num="8" name="P8" type="passive"/>
+        <pin num="9" name="P9" type="passive"/>
+        <pin num="10" name="P10" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="D_Schottky">
+      <footprints>
+        <fp>D-Pak_TO252AA</fp>
+        <fp>Diode_*</fp>
+        <fp>*SingleDiode</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>*_Diode_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="R">
+      <footprints>
+        <fp>R_*</fp>
+        <fp>Resistor_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="front_controls-rescue" part="ZENER">
+      <footprints>
+        <fp>D?</fp>
+        <fp>SO*</fp>
+        <fp>SM*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">ZENER</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector_Generic">
+      <uri>/usr/share/kicad/library/Connector_Generic.lib</uri>
+    </library>
+    <library logical="Device">
+      <uri>/usr/share/kicad/library/Device.lib</uri>
+    </library>
+    <library logical="G3VM-31BR">
+      <uri>/home/jacob/EngineDataLogger-FrontControls/hardware/Libraries/G3VM-31BR.lib</uri>
+    </library>
+    <library logical="front_controls-rescue">
+      <uri>/home/jacob/EngineDataLogger-FrontControls/hardware/Libraries/front_controls-rescue.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="Net-(R32-Pad1)">
+      <node ref="R32" pin="1"/>
+      <node ref="U7" pin="2"/>
+    </net>
+    <net code="2" name="Net-(R33-Pad1)">
+      <node ref="R33" pin="1"/>
+      <node ref="U8" pin="2"/>
+    </net>
+    <net code="3" name="Net-(R34-Pad1)">
+      <node ref="U9" pin="2"/>
+      <node ref="R34" pin="1"/>
+    </net>
+    <net code="4" name="Net-(R35-Pad1)">
+      <node ref="U10" pin="2"/>
+      <node ref="R35" pin="1"/>
+    </net>
+    <net code="5" name="GND">
+      <node ref="C8" pin="2"/>
+      <node ref="D17" pin="2"/>
+      <node ref="R15" pin="2"/>
+      <node ref="D11" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="U1" pin="23"/>
+      <node ref="C1" pin="2"/>
+      <node ref="D2" pin="2"/>
+      <node ref="C2" pin="2"/>
+      <node ref="D4" pin="2"/>
+      <node ref="D19" pin="2"/>
+      <node ref="R13" pin="2"/>
+      <node ref="D8" pin="2"/>
+      <node ref="D14" pin="2"/>
+      <node ref="R12" pin="2"/>
+      <node ref="C5" pin="2"/>
+      <node ref="D16" pin="2"/>
+      <node ref="R14" pin="2"/>
+      <node ref="C7" pin="2"/>
+      <node ref="D15" pin="2"/>
+      <node ref="D10" pin="2"/>
+      <node ref="C6" pin="2"/>
+      <node ref="D13" pin="2"/>
+      <node ref="D12" pin="2"/>
+      <node ref="R31" pin="2"/>
+      <node ref="R17" pin="2"/>
+      <node ref="C10" pin="2"/>
+      <node ref="D18" pin="2"/>
+      <node ref="R16" pin="2"/>
+      <node ref="C9" pin="2"/>
+      <node ref="D9" pin="2"/>
+      <node ref="D6" pin="2"/>
+      <node ref="R11" pin="2"/>
+      <node ref="R1" pin="2"/>
+      <node ref="C4" pin="2"/>
+      <node ref="D7" pin="2"/>
+      <node ref="R2" pin="2"/>
+      <node ref="R3" pin="2"/>
+      <node ref="R30" pin="2"/>
+      <node ref="R35" pin="2"/>
+      <node ref="R32" pin="2"/>
+      <node ref="R33" pin="2"/>
+      <node ref="R34" pin="2"/>
+    </net>
+    <net code="6" name="Net-(R31-Pad1)">
+      <node ref="U6" pin="2"/>
+      <node ref="R31" pin="1"/>
+    </net>
+    <net code="7" name="Net-(C1-Pad1)">
+      <node ref="R7" pin="2"/>
+      <node ref="C1" pin="1"/>
+      <node ref="R4" pin="2"/>
+      <node ref="U1" pin="15"/>
+    </net>
+    <net code="8" name="Net-(R1-Pad1)">
+      <node ref="U2" pin="2"/>
+      <node ref="R1" pin="1"/>
+    </net>
+    <net code="9" name="Net-(R2-Pad1)">
+      <node ref="R2" pin="1"/>
+      <node ref="U3" pin="2"/>
+    </net>
+    <net code="10" name="Net-(R3-Pad1)">
+      <node ref="R3" pin="1"/>
+      <node ref="U4" pin="2"/>
+    </net>
+    <net code="11" name="Net-(R30-Pad1)">
+      <node ref="R30" pin="1"/>
+      <node ref="U5" pin="2"/>
+    </net>
+    <net code="12" name="Net-(U1-Pad9)">
+      <node ref="U6" pin="1"/>
+      <node ref="U1" pin="9"/>
+    </net>
+    <net code="13" name="Net-(Q1-Pad1)">
+      <node ref="U3" pin="1"/>
+      <node ref="U1" pin="18"/>
+      <node ref="Q1" pin="1"/>
+    </net>
+    <net code="14" name="Net-(C3-Pad1)">
+      <node ref="C3" pin="1"/>
+      <node ref="R6" pin="2"/>
+      <node ref="U1" pin="17"/>
+      <node ref="R9" pin="2"/>
+    </net>
+    <net code="15" name="Net-(D3-Pad1)">
+      <node ref="P2" pin="9"/>
+      <node ref="D3" pin="1"/>
+    </net>
+    <net code="16" name="Net-(D3-Pad2)">
+      <node ref="D4" pin="1"/>
+      <node ref="D3" pin="2"/>
+      <node ref="R5" pin="1"/>
+    </net>
+    <net code="17" name="Net-(C2-Pad1)">
+      <node ref="U1" pin="16"/>
+      <node ref="R5" pin="2"/>
+      <node ref="R8" pin="2"/>
+      <node ref="C2" pin="1"/>
+    </net>
+    <net code="18" name="Net-(D5-Pad1)">
+      <node ref="P2" pin="8"/>
+      <node ref="D5" pin="1"/>
+    </net>
+    <net code="19" name="Net-(D5-Pad2)">
+      <node ref="D5" pin="2"/>
+      <node ref="D6" pin="1"/>
+      <node ref="R6" pin="1"/>
+    </net>
+    <net code="20" name="VCC">
+      <node ref="R9" pin="1"/>
+      <node ref="R8" pin="1"/>
+      <node ref="R7" pin="1"/>
+      <node ref="U1" pin="24"/>
+    </net>
+    <net code="21" name="Net-(C10-Pad1)">
+      <node ref="D13" pin="1"/>
+      <node ref="C10" pin="1"/>
+      <node ref="R17" pin="1"/>
+      <node ref="R23" pin="1"/>
+      <node ref="U1" pin="2"/>
+    </net>
+    <net code="22" name="Net-(C8-Pad1)">
+      <node ref="U1" pin="4"/>
+      <node ref="C8" pin="1"/>
+      <node ref="D11" pin="1"/>
+      <node ref="R15" pin="1"/>
+      <node ref="R21" pin="1"/>
+    </net>
+    <net code="23" name="Net-(D16-Pad1)">
+      <node ref="R20" pin="2"/>
+      <node ref="D16" pin="1"/>
+      <node ref="R26" pin="1"/>
+    </net>
+    <net code="24" name="Net-(C7-Pad1)">
+      <node ref="U1" pin="5"/>
+      <node ref="C7" pin="1"/>
+      <node ref="R20" pin="1"/>
+      <node ref="R14" pin="1"/>
+      <node ref="D10" pin="1"/>
+    </net>
+    <net code="25" name="Net-(D1-Pad1)">
+      <node ref="P2" pin="10"/>
+      <node ref="D1" pin="1"/>
+    </net>
+    <net code="26" name="Net-(U1-Pad22)">
+      <node ref="U1" pin="22"/>
+    </net>
+    <net code="27" name="Net-(D1-Pad2)">
+      <node ref="R4" pin="1"/>
+      <node ref="D1" pin="2"/>
+      <node ref="D2" pin="1"/>
+    </net>
+    <net code="28" name="Net-(J1-Pad1)">
+      <node ref="J1" pin="1"/>
+      <node ref="U2" pin="5"/>
+    </net>
+    <net code="29" name="Net-(J2-Pad1)">
+      <node ref="J2" pin="1"/>
+      <node ref="U3" pin="5"/>
+    </net>
+    <net code="30" name="Net-(J5-Pad2)">
+      <node ref="U6" pin="6"/>
+      <node ref="J5" pin="2"/>
+    </net>
+    <net code="31" name="Net-(U6-Pad4)">
+      <node ref="U6" pin="4"/>
+    </net>
+    <net code="32" name="Net-(J7-Pad1)">
+      <node ref="J7" pin="1"/>
+      <node ref="U8" pin="5"/>
+    </net>
+    <net code="33" name="Net-(J6-Pad1)">
+      <node ref="J6" pin="1"/>
+      <node ref="U7" pin="5"/>
+    </net>
+    <net code="34" name="Net-(J5-Pad1)">
+      <node ref="J5" pin="1"/>
+      <node ref="U6" pin="5"/>
+    </net>
+    <net code="35" name="Net-(U10-Pad4)">
+      <node ref="U10" pin="4"/>
+    </net>
+    <net code="36" name="Net-(J4-Pad1)">
+      <node ref="U5" pin="5"/>
+      <node ref="J4" pin="1"/>
+    </net>
+    <net code="37" name="Net-(J3-Pad1)">
+      <node ref="J3" pin="1"/>
+      <node ref="U4" pin="5"/>
+    </net>
+    <net code="38" name="Net-(U5-Pad4)">
+      <node ref="U5" pin="4"/>
+    </net>
+    <net code="39" name="Net-(J4-Pad2)">
+      <node ref="J4" pin="2"/>
+      <node ref="U5" pin="6"/>
+    </net>
+    <net code="40" name="Net-(U4-Pad4)">
+      <node ref="U4" pin="4"/>
+    </net>
+    <net code="41" name="Net-(J3-Pad2)">
+      <node ref="J3" pin="2"/>
+      <node ref="U4" pin="6"/>
+    </net>
+    <net code="42" name="Net-(U3-Pad4)">
+      <node ref="U3" pin="4"/>
+    </net>
+    <net code="43" name="Net-(J2-Pad2)">
+      <node ref="U3" pin="6"/>
+      <node ref="J2" pin="2"/>
+    </net>
+    <net code="44" name="Net-(Q1-Pad2)">
+      <node ref="Q1" pin="2"/>
+      <node ref="U2" pin="1"/>
+    </net>
+    <net code="45" name="Net-(U2-Pad4)">
+      <node ref="U2" pin="4"/>
+    </net>
+    <net code="46" name="Net-(J1-Pad2)">
+      <node ref="J1" pin="2"/>
+      <node ref="U2" pin="6"/>
+    </net>
+    <net code="47" name="Net-(J9-Pad2)">
+      <node ref="U10" pin="6"/>
+      <node ref="J9" pin="2"/>
+    </net>
+    <net code="48" name="Net-(U9-Pad4)">
+      <node ref="U9" pin="4"/>
+    </net>
+    <net code="49" name="Net-(J8-Pad2)">
+      <node ref="U9" pin="6"/>
+      <node ref="J8" pin="2"/>
+    </net>
+    <net code="50" name="Net-(J7-Pad2)">
+      <node ref="U8" pin="6"/>
+      <node ref="U8" pin="4"/>
+      <node ref="J7" pin="2"/>
+    </net>
+    <net code="51" name="Net-(J6-Pad2)">
+      <node ref="J6" pin="2"/>
+      <node ref="U7" pin="4"/>
+      <node ref="U7" pin="6"/>
+    </net>
+    <net code="52" name="Net-(D20-Pad1)">
+      <node ref="D21" pin="1"/>
+      <node ref="Q1" pin="3"/>
+      <node ref="D20" pin="1"/>
+    </net>
+    <net code="53" name="Net-(D20-Pad2)">
+      <node ref="U1" pin="19"/>
+      <node ref="U4" pin="1"/>
+      <node ref="D20" pin="2"/>
+    </net>
+    <net code="54" name="Net-(D21-Pad2)">
+      <node ref="U5" pin="1"/>
+      <node ref="U1" pin="8"/>
+      <node ref="D21" pin="2"/>
+    </net>
+    <net code="55" name="Net-(J8-Pad1)">
+      <node ref="U9" pin="5"/>
+      <node ref="J8" pin="1"/>
+    </net>
+    <net code="56" name="Net-(J9-Pad1)">
+      <node ref="J9" pin="1"/>
+      <node ref="U10" pin="5"/>
+    </net>
+    <net code="57" name="Net-(C6-Pad1)">
+      <node ref="C6" pin="1"/>
+      <node ref="R19" pin="1"/>
+      <node ref="U1" pin="6"/>
+      <node ref="R13" pin="1"/>
+      <node ref="D9" pin="1"/>
+    </net>
+    <net code="58" name="Net-(D14-Pad1)">
+      <node ref="R24" pin="1"/>
+      <node ref="R18" pin="2"/>
+      <node ref="D14" pin="1"/>
+    </net>
+    <net code="59" name="Net-(D15-Pad1)">
+      <node ref="R19" pin="2"/>
+      <node ref="R25" pin="1"/>
+      <node ref="D15" pin="1"/>
+    </net>
+    <net code="60" name="Net-(D18-Pad1)">
+      <node ref="R22" pin="2"/>
+      <node ref="D18" pin="1"/>
+      <node ref="R28" pin="1"/>
+    </net>
+    <net code="61" name="Net-(C9-Pad1)">
+      <node ref="R16" pin="1"/>
+      <node ref="R22" pin="1"/>
+      <node ref="D12" pin="1"/>
+      <node ref="C9" pin="1"/>
+      <node ref="U1" pin="3"/>
+    </net>
+    <net code="62" name="Net-(D19-Pad1)">
+      <node ref="R29" pin="1"/>
+      <node ref="R23" pin="2"/>
+      <node ref="D19" pin="1"/>
+    </net>
+    <net code="63" name="Net-(D17-Pad1)">
+      <node ref="R27" pin="1"/>
+      <node ref="D17" pin="1"/>
+      <node ref="R21" pin="2"/>
+    </net>
+    <net code="64" name="Net-(P2-Pad4)">
+      <node ref="P2" pin="4"/>
+      <node ref="R27" pin="2"/>
+    </net>
+    <net code="65" name="Net-(P2-Pad1)">
+      <node ref="P2" pin="1"/>
+      <node ref="R24" pin="2"/>
+    </net>
+    <net code="66" name="Net-(P2-Pad2)">
+      <node ref="P2" pin="2"/>
+      <node ref="R25" pin="2"/>
+    </net>
+    <net code="67" name="Net-(P2-Pad3)">
+      <node ref="R26" pin="2"/>
+      <node ref="P2" pin="3"/>
+    </net>
+    <net code="68" name="Net-(P2-Pad7)">
+      <node ref="R10" pin="1"/>
+      <node ref="P2" pin="7"/>
+    </net>
+    <net code="69" name="Net-(P2-Pad5)">
+      <node ref="P2" pin="5"/>
+      <node ref="R28" pin="2"/>
+    </net>
+    <net code="70" name="Net-(P2-Pad6)">
+      <node ref="P2" pin="6"/>
+      <node ref="R29" pin="2"/>
+    </net>
+    <net code="71" name="Net-(C4-Pad1)">
+      <node ref="C4" pin="1"/>
+      <node ref="D7" pin="1"/>
+      <node ref="R11" pin="1"/>
+      <node ref="R10" pin="2"/>
+      <node ref="U1" pin="14"/>
+    </net>
+    <net code="72" name="Net-(U1-Pad21)">
+      <node ref="U1" pin="21"/>
+    </net>
+    <net code="73" name="Net-(U1-Pad13)">
+      <node ref="U1" pin="13"/>
+      <node ref="U10" pin="1"/>
+    </net>
+    <net code="74" name="Net-(U1-Pad20)">
+      <node ref="U1" pin="20"/>
+    </net>
+    <net code="75" name="Net-(U1-Pad12)">
+      <node ref="U9" pin="1"/>
+      <node ref="U1" pin="12"/>
+    </net>
+    <net code="76" name="Net-(U1-Pad25)">
+      <node ref="U1" pin="25"/>
+    </net>
+    <net code="77" name="Net-(U1-Pad26)">
+      <node ref="U1" pin="26"/>
+    </net>
+    <net code="78" name="Net-(U1-Pad27)">
+      <node ref="U1" pin="27"/>
+    </net>
+    <net code="79" name="Net-(U1-Pad0)">
+      <node ref="U1" pin="0"/>
+    </net>
+    <net code="80" name="Net-(U1-Pad1)">
+      <node ref="U1" pin="1"/>
+    </net>
+    <net code="81" name="Net-(U1-Pad10)">
+      <node ref="U1" pin="10"/>
+      <node ref="U7" pin="1"/>
+    </net>
+    <net code="82" name="Net-(U1-Pad11)">
+      <node ref="U8" pin="1"/>
+      <node ref="U1" pin="11"/>
+    </net>
+    <net code="83" name="Net-(C5-Pad1)">
+      <node ref="R12" pin="1"/>
+      <node ref="R18" pin="1"/>
+      <node ref="C5" pin="1"/>
+      <node ref="D8" pin="1"/>
+      <node ref="U1" pin="7"/>
+    </net>
+  </nets>
+</export>
