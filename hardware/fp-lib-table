@@ -1,4 +1,6 @@
 (fp_lib_table
   (lib (name Adafruit)(type KiCad)(uri "$(KIPRJMOD)/Footprints/Adafruit.pretty")(options "")(descr ""))
   (lib (name G3VM-31BR)(type KiCad)(uri ${KIPRJMOD}/Footprints/G3VM-31BR.pretty)(options "")(descr ""))
+  (lib (name NANO)(type KiCad)(uri ${KIPRJMOD}/Footprints/Modules.pretty)(options "")(descr ""))
+  (lib (name eec)(type KiCad)(uri ${KIPRJMOD}/Footprints/eec.pretty)(options "")(descr ""))
 )
