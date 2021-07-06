@@ -517,6 +517,8 @@ void Wakeup_Routine()
   detachInterrupt(0);
   power_all_enable ();                                  // power everything back on
   ADCSRA = ADCSRA_save;
+  CAN.wake();
+  CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
 }
 
 void allRelaysOff () {
@@ -537,6 +539,8 @@ void allRelaysOff () {
 void sleepNow ()
 {
   allRelaysOff();
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  CAN.sleep();
   cli();                                                //disable interrupts
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
   attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
@@ -639,12 +643,14 @@ void setup() {
 
   //Serial.println("Timers Done");
   // CAN Setup
-  while (CAN_OK != CAN.begin(CAN_100KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+  while (CAN_OK != CAN.begin(CAN_250KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
 	  Serial.println("CAN ERROR");
       delay(100);
   }
 
   //Serial.println("CAN Done");
+
+  CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
 
   //Serial.println("Startup Complete!");
   //delay(1000);
