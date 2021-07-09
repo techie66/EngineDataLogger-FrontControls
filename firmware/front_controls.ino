@@ -518,7 +518,7 @@ void Wakeup_Routine()
   power_all_enable ();                                  // power everything back on
   ADCSRA = ADCSRA_save;
   CAN.wake();
-  CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
 }
 
 void allRelaysOff () {
@@ -539,7 +539,7 @@ void allRelaysOff () {
 void sleepNow ()
 {
   allRelaysOff();
-  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
   cli();                                                //disable interrupts
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
