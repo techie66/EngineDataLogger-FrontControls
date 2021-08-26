@@ -1,4 +1,7 @@
 (sym_lib_table
   (lib (name front_controls-rescue)(type Legacy)(uri ${KIPRJMOD}/Libraries/front_controls-rescue.lib)(options "")(descr ""))
   (lib (name G3VM-31BR)(type Legacy)(uri ${KIPRJMOD}/Libraries/G3VM-31BR.lib)(options "")(descr ""))
+  (lib (name Regulators)(type Legacy)(uri ${KIPRJMOD}/Libraries/Regulator_Switching.lib)(options "")(descr ""))
+  (lib (name eec)(type Legacy)(uri ${KIPRJMOD}/Libraries/eec.lib)(options "")(descr ""))
+  (lib (name lmr14030)(type Legacy)(uri /home/jacob/software/mine/c++/EngineDataLogger-FrontControls/hardware/Libraries/LMR14030.lib)(options "")(descr ""))
 )

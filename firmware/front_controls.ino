@@ -46,7 +46,9 @@
 #include <avr/interrupt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
- 
+#include <Wire.h>
+#include <mcp2515_can.h>
+
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
 uint8_t inputCmdC; // analog pins A0-A5 (two high bits unuseable ATMega328p)
@@ -60,36 +62,68 @@ uint8_t ADCSRA_save = 0;
 volatile boolean brakeStart = false;
 boolean engineStarted = false;
 float systemVoltage = 0;
+volatile uint8_t mcpA = 0; // Output buffer for GPIOA
+volatile uint8_t mcpB = 0; // Output buffer for GPIOB
 
 // PORTD
 const uint8_t brakeInPin = 2;
-const uint8_t hornInPin = 3;
 const uint8_t leftInPin = 4;
 const uint8_t rightInPin = 5;
-const uint8_t hlhighInPin = 6;
-const uint8_t killInPin = 7;
 
-// PORTB
-const uint8_t leftOutPin = 8;
-const uint8_t rightOutPin = 9;
-const uint8_t hornOutPin = 10;
-const uint8_t hlhighOutPin = 11;
-const uint8_t hllowOutPin = 12;
-const uint8_t brakeOutPin = 13;
+// MCP_GPIOA
+const uint8_t hornOutPin = B00000001;
+const uint8_t clutchInPin = B00000010;
+const uint8_t kickInPin = B00000100;
+const uint8_t neutralInPin = B00001000;
+const uint8_t hornInPin = B00010000;
+const uint8_t hlhighInPin = B00100000;
+const uint8_t killInPin = B01000000;
+const uint8_t BTStatePin = B10000000;
+
+// MCP_GPIOB
+const uint8_t leftOutPin = B00000001;
+const uint8_t rightOutPin = B00000010;
+const uint8_t rearOutPin = B00000100;
+const uint8_t brakeOutPin = B00001000;
+const uint8_t startEnableOutPin = B00010000;
+const uint8_t hlhighOutPin = B00100000;
+const uint8_t hllowOutPin = B01000000;
+const uint8_t runningOutPin = B10000000;
 
 // PORTC
-const uint8_t startEnableOutPin = A0;
-const uint8_t rearOutPin = A1;
-const uint8_t clutchInPin = A2;
-const uint8_t kickInPin = A3;
-const uint8_t neutralInPin = A4;
-const uint8_t voltageInPin = A5;
+const uint8_t voltageInPin = A6;
+
+
+
+
+/********OUTPUTS***************
+Left
+Right
+Horn
+hlHigh
+hlLow
+Brake
+startenable
+rear
+inverted rear (running lights?)
+******************************/
+/********INPUTS****************
+Brake
+Horn
+Left
+Right
+hlHigh
+Kill
+clutch
+neutral
+voltage
+******************************/
 
 const uint8_t CMD_SIZE = 4;  // WIP see doCmd()
 const uint16_t SERIAL_OUT_RATE = 50;
 const unsigned long SERIAL_EXPIRE = 4000;
-const uint8_t RLY_ON = LOW;
-const uint8_t RLY_OFF = HIGH;
+const uint8_t RLY_ON = HIGH;
+const uint8_t RLY_OFF = LOW;
 const unsigned long blinkDelay = 350;
 const unsigned long SLEEP_DELAY = 120000;
 const unsigned long BRAKE_FLASH_INTERVAL = 50;
@@ -113,17 +147,76 @@ const uint8_t IN_NEUTRAL  = B00010000;          //receivedCmdC
 const uint8_t KICKSTAND_UP = B00001000;         //receivedCmdC
 //ADD MORE HERE
 
+// CAN Constants
+const int SPI_CS_PIN = 10;
+mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
 
 void readSensors() {
+  byte inputs=0;
   inputCmdD = PIND;
-  inputCmdC = PINC;
+  //inputCmdC = PINC;
   systemVoltage = ( analogRead(voltageInPin));
   systemVoltage = (systemVoltage / 1024) * 5.0;
   systemVoltage = systemVoltage / denominator;
 
   // invert ACTIVE LOW signal inputs
-  inputCmdC ^= B00011100;
+  // inputCmdC ^= B00011100;
 
+  // Convert inputs to standard commands
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x12); // GPIOA
+  Wire.endTransmission();
+  Wire.requestFrom(0x20, 1);
+  inputs=Wire.read();
+
+  if (inputs & clutchInPin ) {
+    //clutch
+	inputCmdC |= CLUTCH_DISENGAGED;
+  }
+  else {
+	  inputCmdC &= (CLUTCH_DISENGAGED ^ 0xFF);
+  }
+  if (inputs & kickInPin ) {
+    //kick
+	inputCmdC |= KICKSTAND_UP;
+  }
+  else {
+	  inputCmdC &= (KICKSTAND_UP ^ 0xFF);
+  }
+  if (inputs & neutralInPin ) {
+    //neutral
+	inputCmdC |= IN_NEUTRAL;
+  }
+  else {
+	  inputCmdC &= (IN_NEUTRAL ^ 0xFF);
+  }
+  if (inputs & hornInPin ) {
+    //horn
+	inputCmdD |= HORN_ON;
+  }
+  else {
+	  inputCmdD &= (HORN_ON ^ 0xFF);
+  }
+  if (inputs & hlhighInPin ) {
+    //high beams
+	inputCmdD |= HIGH_BEAMS_ON;
+  }
+  else {
+	  inputCmdD &= (HIGH_BEAMS_ON ^ 0xFF);
+  }
+  if (inputs & killInPin ) {
+    //killswitch
+	inputCmdD |= KILL_ON;
+  }
+  else {
+	  inputCmdD &= (KILL_ON ^ 0xFF);
+  }
+  if (inputs & B10000000 ) {
+    //in btstate
+  }
+  else {
+  }
 }
 
 void recvCmd() {
@@ -200,8 +293,6 @@ void sendData() {
   static float lastVoltage;
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
-  uint8_t tmp;
-
 
   if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage)) {
     //Nothing, everything is the same, no need to repeat ourselves
@@ -210,6 +301,13 @@ void sendData() {
     //Nothing, limit output rate
   }
   else {
+	// Send CAN Packets
+	static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	stmp[0] = inputCmdD;
+	stmp[1] = inputCmdC;
+	stmp[1] = serialCmdA;
+	stmp[3] = systemVoltage;
+	CAN.sendMsgBuf(0x00, 0, 8, stmp);
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
     Serial.write(inputCmdC);
@@ -256,52 +354,51 @@ void sendData() {
 ISR(TIMER1_COMPA_vect){
   // Interrupt called when time to toggle flashers
   
-  static bool pinOn = false;
+  // Hazards
+  static bool initiate = true;
+  if ((receivedCmdD & B00110000) == B00110000) {
+	  if (initiate) {
+		  mcpB |= leftOutPin;
+		  mcpB |= rightOutPin;
+		  initiate = false;
+	  }
+  }
+  else {
+	  initiate = true;
+  }
+
 
   //LEFT
   // Determine if blinking or not, bitmask
   if (receivedCmdD & B00010000) { // Pin 4 of PortD
     //Toggle
-    if (pinOn) {
-      // Turn off
-      digitalWrite(leftOutPin, RLY_OFF);
-    }
-    else {
-      //turn on
-      digitalWrite(leftOutPin, RLY_ON);
-    }
+	mcpB ^= leftOutPin;
   }
   else {
     // - Not, turn light on and exit
-    digitalWrite(leftOutPin, RLY_OFF);
+	mcpB &= (leftOutPin ^ 0xFF);
   }
 
   //RIGHT
   // Determine if blinking or not, bitmask
   if (receivedCmdD & B00100000) { // Pin 5 of PortD
     //Toggle
-    if (pinOn) {
-      // Turn off
-      digitalWrite(rightOutPin, RLY_OFF);
-    }
-    else {
-      //turn on
-      digitalWrite(rightOutPin, RLY_ON);
-    }
+	mcpB ^= rightOutPin;
   }
   else {
     // - Not, turn light on and exit
-    digitalWrite(rightOutPin, RLY_OFF);
+	mcpB &= (rightOutPin ^ 0xFF);
   }
 
   if (receivedCmdD & B00110000) { // Either left, right or both, Pin 4 or 5 of PortD
     // Enable rear lights
-    digitalWrite(rearOutPin, RLY_ON);
-    pinOn = !pinOn;
+	mcpB |= rearOutPin;
+	mcpB &= (runningOutPin ^ 0xFF);
   }
   else { // Neither
     // Disable rear lights
-    digitalWrite(rearOutPin, RLY_OFF);
+	mcpB &= (rearOutPin ^ 0xFF);
+	mcpB |= runningOutPin;
   }
 }
 
@@ -327,24 +424,24 @@ void brakeLight() {
       
       if (i < 14) { // while loop would block for almost a second
         if (currentMillis > ( brakeDelayStart + BRAKE_FLASH_INTERVAL )) {
-          digitalWrite(brakeOutPin, !digitalRead(brakeOutPin));
+		  mcpB ^= brakeOutPin;
           brakeDelayStart = currentMillis;
           i++;
         }
       }
       else {
-        digitalWrite(brakeOutPin,RLY_ON);
+		mcpB |= brakeOutPin;
         brakeStart = false;
       }
       
     }
     else {
-      digitalWrite(brakeOutPin,RLY_ON);
+      mcpB |= brakeOutPin;
       brakeEngaged = true;
     }
   }
   else {
-    digitalWrite(brakeOutPin,RLY_OFF);
+	mcpB &= (brakeOutPin ^ 0xFF);
     i = 0;
     brakeEngaged = false;
     brakeStart=true;
@@ -353,10 +450,10 @@ void brakeLight() {
 
 void hornSound() {
   if (receivedCmdD & HORN_ON) {
-    digitalWrite(hornOutPin,RLY_ON);
+	mcpA |= hornOutPin;
   }
   else {
-    digitalWrite(hornOutPin,RLY_OFF);
+	mcpA &= (hornOutPin ^ 0xFF);
   }
 }
 
@@ -374,21 +471,21 @@ void enableStart() {
    // If either clutch or neutral switches are grounded (engine off or on)
    if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) && (receivedCmdD & KILL_ON) ) {
      // enable
-     digitalWrite(startEnableOutPin, RLY_ON);
+	 mcpB |= startEnableOutPin;
    }
    // if kickstand up (engine off)
    else if ( (receivedCmdC & KICKSTAND_UP) && !(serialCmdA & ENGINE_RUNNING) && (receivedCmdD & KILL_ON) ) {
      // enable
-     digitalWrite(startEnableOutPin, RLY_ON);
+	 mcpB |= startEnableOutPin;
    }
    else if ( engineStarted && !(receivedCmdD & KILL_ON) && (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) ) {
    //else if (!(receivedCmdD & KILL_ON)) {
-     digitalWrite(startEnableOutPin, RLY_ON);
+	 mcpB |= startEnableOutPin;
    }
    // Otherwise
    else {
      // disable
-     digitalWrite(startEnableOutPin, RLY_OFF);
+	 mcpB &= (startEnableOutPin ^ 0xFF);
    }
      
    
@@ -401,16 +498,16 @@ void hlMode() {
    */
    if ( (receivedCmdD & KILL_ON) && (receivedCmdD & HIGH_BEAMS_ON) && (serialCmdA & ENGINE_RUNNING) ) {
      // high beam switch on, kill switch on, engine running
-     digitalWrite(hlhighOutPin, RLY_ON);
-     digitalWrite(hllowOutPin, RLY_OFF);
+	 mcpB |= hlhighOutPin;
+	 mcpB &= (hllowOutPin ^ 0xFF);
    }
    else if (serialCmdA & ENGINE_RUNNING) {
-     digitalWrite(hllowOutPin, RLY_ON);
-     digitalWrite(hlhighOutPin, RLY_OFF);
+	 mcpB |= hllowOutPin;
+	 mcpB &= (hlhighOutPin ^ 0xFF);
    }
    else {
-     digitalWrite(hlhighOutPin, RLY_OFF);
-     digitalWrite(hllowOutPin, RLY_OFF);
+	 mcpB &= (hlhighOutPin ^ 0xFF);
+	 mcpB &= (hllowOutPin ^ 0xFF);
    }
 }
 
@@ -420,28 +517,33 @@ void Wakeup_Routine()
   detachInterrupt(0);
   power_all_enable ();                                  // power everything back on
   ADCSRA = ADCSRA_save;
+  CAN.wake();
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
 }
 
 void allRelaysOff () {
   //Turns all relays off
-  
-  digitalWrite(leftOutPin, RLY_OFF);
-  digitalWrite(rightOutPin, RLY_OFF);
-  digitalWrite(hornOutPin, RLY_OFF);
-  digitalWrite(hlhighOutPin, RLY_OFF);
-  digitalWrite(hllowOutPin, RLY_OFF);
-  digitalWrite(brakeOutPin, RLY_OFF);
-  digitalWrite(startEnableOutPin, RLY_OFF);
-  digitalWrite(rearOutPin, RLY_OFF);
+ 
+  Wire.beginTransmission(0x20);
+  Wire.write(0x12); // GPIOA
+  Wire.write(0x00); // All Off
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x13); // GPIOB
+  Wire.write(0x00); // All Off
+  Wire.endTransmission();
 
 }
 
 void sleepNow ()
 {
+  allRelaysOff();
+  CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
+  CAN.sleep();
   cli();                                                //disable interrupts
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
   attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
-  allRelaysOff();
   set_sleep_mode (SLEEP_MODE_PWR_DOWN);  
   ADCSRA_save = ADCSRA;
   ADCSRA = 0;                                           //disable the ADC
@@ -471,36 +573,59 @@ void doCmd() {
    *  receivedCmdC ^= serialCmdA;  // not complete
    */
    
-   hornSound();
-   hlMode();
-   enableStart();
-   brakeLight();
-  
+  hornSound();
+  hlMode();
+  enableStart();
+  brakeLight();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x12); // GPIOA register
+  Wire.write(mcpA); // write outputs
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x13); // GPIOB register
+  Wire.write(mcpB); // write outputs
+  Wire.endTransmission();
+
 }
 
 void setup() {
   Serial.begin(115200);
+  //Serial.println("Startup initiated!");
+  Wire.begin(); // wake up I2C bus
 
-  pinMode(leftOutPin, OUTPUT);
-  pinMode(rightOutPin, OUTPUT);
-  pinMode(hornOutPin, OUTPUT);
-  pinMode(hlhighOutPin, OUTPUT);
-  pinMode(hllowOutPin, OUTPUT);
-  pinMode(brakeOutPin, OUTPUT);
-  pinMode(startEnableOutPin, OUTPUT);
-  pinMode(rearOutPin, OUTPUT);
+  Wire.beginTransmission(0x20);
+  Wire.write(0x00); // IODIRA register
+  Wire.write(0xFE); // set pin 0 of port A to output, 1-7 to input
+  Wire.endTransmission();
 
-  allRelaysOff();
+  Wire.beginTransmission(0x20);
+  Wire.write(0x01); // IODIRB register
+  Wire.write(0x00); // set all of port B to outputs
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x04); // GPINTENA
+  Wire.write(0xFE); // 1-7 enable interrupt
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x02); // IPOLA
+  Wire.write(0x0E); // Pins 1-3
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x0C); // GPPUA
+  Wire.write(0x0E); // Pins 1-3
+  Wire.endTransmission();
+
+  //Serial.println("I2c Done");
+  //allRelaysOff();
 
   pinMode(brakeInPin, INPUT);
-  pinMode(hornInPin, INPUT);
   pinMode(leftInPin, INPUT);
   pinMode(rightInPin, INPUT);
-  pinMode(hlhighInPin, INPUT);
-  pinMode(killInPin, INPUT);
-  pinMode(clutchInPin, INPUT_PULLUP);
-  pinMode(neutralInPin, INPUT_PULLUP);
-  pinMode(kickInPin, INPUT_PULLUP);
   pinMode(voltageInPin, INPUT); // Analog for Voltage
   
   //set timer1 interrupt at 3Hz
@@ -516,7 +641,19 @@ void setup() {
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
 
+  //Serial.println("Timers Done");
+  // CAN Setup
+  while (CAN_OK != CAN.begin(CAN_250KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+	  Serial.println("CAN ERROR");
+      delay(100);
+  }
+
+  //Serial.println("CAN Done");
+
+  CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
+
   //Serial.println("Startup Complete!");
+  //delay(1000);
 }
 
 void loop() {
