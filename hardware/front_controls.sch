@@ -1827,18 +1827,6 @@ F 3 "" H 6600 4500 50  0000 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L power:GND #PWR0113
-U 1 1 6073990D
-P 1600 4200
-F 0 "#PWR0113" H 1600 3950 50  0001 C CNN
-F 1 "GND" H 1605 4027 50  0000 C CNN
-F 2 "" H 1600 4200 50  0001 C CNN
-F 3 "" H 1600 4200 50  0001 C CNN
-	1    1600 4200
-	1    0    0    -1  
-$EndComp
-Connection ~ 1600 4200
-$Comp
 L Device:R R19
 U 1 1 60812AD1
 P 1650 7000
@@ -2078,21 +2066,14 @@ Wire Wire Line
 $Comp
 L power:GND #PWR0116
 U 1 1 60E22969
-P 5850 4250
-F 0 "#PWR0116" H 5850 4000 50  0001 C CNN
-F 1 "GND" H 5855 4077 50  0000 C CNN
-F 2 "" H 5850 4250 50  0001 C CNN
-F 3 "" H 5850 4250 50  0001 C CNN
-	1    5850 4250
+P 5850 3700
+F 0 "#PWR0116" H 5850 3450 50  0001 C CNN
+F 1 "GND" H 5855 3527 50  0000 C CNN
+F 2 "" H 5850 3700 50  0001 C CNN
+F 3 "" H 5850 3700 50  0001 C CNN
+	1    5850 3700
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5850 3700 5850 4200
-Wire Wire Line
-	5650 4200 5850 4200
-Connection ~ 5850 4200
-Wire Wire Line
-	5850 4200 5850 4250
 $Comp
 L power:GND #PWR0117
 U 1 1 60E571B8
@@ -2480,20 +2461,6 @@ Text Label 5600 4900 2    50   ~ 0
 VCC
 Text Label 6000 6100 3    50   ~ 0
 GND
-Wire Wire Line
-	1300 4200 1600 4200
-Wire Wire Line
-	1600 4200 1900 4200
-$Sheet
-S 1250 2600 850  600 
-U 60F4CB3B
-F0 "Switching Regulator (5V)" 50
-F1 "REG_SW_5V_LMR33630.sch" 50
-F2 "VCC" O R 2100 2700 50 
-F3 "GND" O R 2100 3000 50 
-F4 "VIN" I L 1250 2700 50 
-F5 "GND" I L 1250 3000 50 
-$EndSheet
 $Comp
 L Device:R_Small R46
 U 1 1 6099734F
@@ -2580,12 +2547,6 @@ F 3 "" H 900 2800 50  0001 C CNN
 	1    900  2800
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	1100 2700 1250 2700
-Wire Wire Line
-	1100 2800 1100 3000
-Wire Wire Line
-	1100 3000 1250 3000
 Text Label 3950 6950 1    50   ~ 0
 GND
 Text Label 3850 6950 1    50   ~ 0
@@ -2598,13 +2559,11 @@ Text Label 5350 7700 3    50   ~ 0
 UART_TX
 Text Label 5450 7700 3    50   ~ 0
 UART_RX
-Text Label 1250 2700 2    50   ~ 0
-VIN
 $Comp
-L Mechanical:MountingHole H?
+L Mechanical:MountingHole H6
 U 1 1 60A2666F
 P 10100 2100
-F 0 "H?" H 10200 2146 50  0000 L CNN
+F 0 "H6" H 10200 2146 50  0000 L CNN
 F 1 "MountingHole" H 10200 2055 50  0000 L CNN
 F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10100 2100 50  0001 C CNN
 F 3 "~" H 10100 2100 50  0001 C CNN
@@ -2612,10 +2571,10 @@ F 3 "~" H 10100 2100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Mechanical:MountingHole H?
+L Mechanical:MountingHole H5
 U 1 1 60A2D26A
 P 800 2250
-F 0 "H?" H 900 2296 50  0000 L CNN
+F 0 "H5" H 900 2296 50  0000 L CNN
 F 1 "MountingHole" H 900 2205 50  0000 L CNN
 F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 800 2250 50  0001 C CNN
 F 3 "~" H 800 2250 50  0001 C CNN
@@ -2623,10 +2582,10 @@ F 3 "~" H 800 2250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Mechanical:MountingHole H?
+L Mechanical:MountingHole H4
 U 1 1 60A2F287
 P 700 7200
-F 0 "H?" H 800 7246 50  0000 L CNN
+F 0 "H4" H 800 7246 50  0000 L CNN
 F 1 "MountingHole" H 800 7155 50  0000 L CNN
 F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 700 7200 50  0001 C CNN
 F 3 "~" H 700 7200 50  0001 C CNN
@@ -2634,14 +2593,64 @@ F 3 "~" H 700 7200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Mechanical:MountingHole H?
+L Mechanical:MountingHole H7
 U 1 1 60A37691
 P 10350 6500
-F 0 "H?" H 10450 6546 50  0000 L CNN
+F 0 "H7" H 10450 6546 50  0000 L CNN
 F 1 "MountingHole" H 10450 6455 50  0000 L CNN
 F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10350 6500 50  0001 C CNN
 F 3 "~" H 10350 6500 50  0001 C CNN
 	1    10350 6500
 	1    0    0    -1  
 $EndComp
+Text Notes 6350 6900 0    50   ~ 0
+connect rx0bf to s on tja1051 use mcppinmode and mcpdigitalwrite to force sleep mode
+Text Label 5650 4200 3    50   ~ 0
+EN_TX
+Text Label 3250 5550 2    50   ~ 0
+EN_TX
+$Comp
+L Device:R_Small R47
+U 1 1 60AD961C
+P 5900 4200
+F 0 "R47" V 6096 4200 50  0000 C CNN
+F 1 "100k" V 6005 4200 50  0000 C CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" H 5900 4200 50  0001 C CNN
+F 3 "" H 5900 4200 50  0001 C CNN
+F 4 "C25741" H 5900 4200 50  0001 C CNN "LCSC"
+	1    5900 4200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:VCC #PWR0110
+U 1 1 60ADDA65
+P 6050 4200
+F 0 "#PWR0110" H 6050 4050 50  0001 C CNN
+F 1 "VCC" H 6067 4373 50  0000 C CNN
+F 2 "" H 6050 4200 50  0001 C CNN
+F 3 "" H 6050 4200 50  0001 C CNN
+	1    6050 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5800 4200 5650 4200
+Wire Wire Line
+	6000 4200 6050 4200
+$Sheet
+S 1250 2650 900  450 
+U 60B4A6B3
+F0 "LMR14030" 50
+F1 "REG_SW_5V_LMR140x0.sch" 50
+F2 "VCC" I R 2150 2700 50 
+F3 "VIN" I L 1250 2700 50 
+F4 "GND" I L 1250 3050 50 
+$EndSheet
+Wire Wire Line
+	1100 2700 1250 2700
+Wire Wire Line
+	1100 2800 1100 3050
+Wire Wire Line
+	1100 3050 1250 3050
+Text Label 1100 2700 0    50   ~ 0
+VIN
 $EndSCHEMATC
