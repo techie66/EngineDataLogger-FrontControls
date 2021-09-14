@@ -305,8 +305,26 @@ void sendData() {
 	static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	stmp[0] = inputCmdD;
 	stmp[1] = inputCmdC;
-	stmp[1] = serialCmdA;
+	stmp[2] = serialCmdA;
 	stmp[3] = systemVoltage;
+	if ( inputCmdC & KICKSTAND_UP ) {
+		stmp[4] = 'K';
+	}
+	else {
+		stmp[4] = 'k';
+	}
+	if ( inputCmdC & IN_NEUTRAL ) {
+		stmp[5] = 'N';
+	}
+	else {
+		stmp[5] = 'n';
+	}
+	if ( inputCmdC & CLUTCH_DISENGAGED ) {
+		stmp[6] = 'C';
+	}
+	else {
+		stmp[6] = 'c';
+	}
 	CAN.sendMsgBuf(0x00, 0, 8, stmp);
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
@@ -643,7 +661,7 @@ void setup() {
 
   //Serial.println("Timers Done");
   // CAN Setup
-  while (CAN_OK != CAN.begin(CAN_250KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+  while (CAN_OK != CAN.begin(CAN_250KBPS,MCP_12MHz)) {             // init can bus : baudrate = 250k
 	  Serial.println("CAN ERROR");
       delay(100);
   }
