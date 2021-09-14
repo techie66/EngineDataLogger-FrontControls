@@ -83,9 +83,9 @@ const uint8_t BTStatePin = B10000000;
 // MCP_GPIOB
 const uint8_t leftOutPin = B00000001;
 const uint8_t rightOutPin = B00000010;
-const uint8_t rearOutPin = B00000100;
+//TODO const uint8_t rearOutPin = B00000100; // Ignition (coils, ignition module)
 const uint8_t brakeOutPin = B00001000;
-const uint8_t startEnableOutPin = B00010000;
+//TODO const uint8_t startEnableOutPin = B00010000; // starter
 const uint8_t hlhighOutPin = B00100000;
 const uint8_t hllowOutPin = B01000000;
 const uint8_t runningOutPin = B10000000;
@@ -409,13 +409,11 @@ ISR(TIMER1_COMPA_vect){
   }
 
   if (receivedCmdD & B00110000) { // Either left, right or both, Pin 4 or 5 of PortD
-    // Enable rear lights
-	mcpB |= rearOutPin;
+    // Disnable position markers(running lights)
 	mcpB &= (runningOutPin ^ 0xFF);
   }
   else { // Neither
-    // Disable rear lights
-	mcpB &= (rearOutPin ^ 0xFF);
+    // Enable position markers(running lights)
 	mcpB |= runningOutPin;
   }
 }
@@ -485,6 +483,9 @@ void enableStart() {
    * Input: neutral, clutch, kickstand, (engine running), kill switch
 
    */
+   return;
+   // TODO
+   /* startenable is now the actual starter
 
    // If either clutch or neutral switches are grounded (engine off or on)
    if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) && (receivedCmdD & KILL_ON) ) {
@@ -505,7 +506,7 @@ void enableStart() {
      // disable
 	 mcpB &= (startEnableOutPin ^ 0xFF);
    }
-     
+     */
    
 }
 
