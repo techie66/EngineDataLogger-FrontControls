@@ -95,7 +95,7 @@ const uint8_t runningOutPin = B10000000;
 const uint8_t voltageInPin = A6;
 
 const uint8_t mainOutPin = 6;
-const uint8_t auxOutPin = A7;
+const uint8_t auxOutPin = A3;
 
 
 
@@ -642,7 +642,7 @@ void setup() {
   pinMode(voltageInPin, INPUT); // Analog for Voltage
   pinMode(mainOutPin, OUTPUT);
   pinMode(auxOutPin, OUTPUT);
-  
+
   //set timer1 interrupt at 3Hz
   TCCR1A = 0;// set entire TCCR1A register to 0
   TCCR1B = 0;// same for TCCR1B
