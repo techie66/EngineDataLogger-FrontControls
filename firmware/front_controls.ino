@@ -62,6 +62,7 @@ uint8_t ADCSRA_save = 0;
 volatile boolean brakeStart = false;
 boolean engineStarted = false;
 float systemVoltage = 0;
+bool powerOn = false;
 volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
 
@@ -485,7 +486,6 @@ void enableStart() {
    * Input: neutral, clutch, kickstand, (engine running), kill switch
 
    */
-   return;
    // TODO
    // startenable is now the actual starter
    // killOutPin
@@ -493,7 +493,7 @@ void enableStart() {
 
 
    // If either clutch, neutral, or kickstand switches are grounded (engine off or on)
-   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED | KICKSTAND_UP)) && (receivedCmdD & KILL_ON) ) {
+   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED | KICKSTAND_UP)) && (receivedCmdD & KILL_ON) && powerOn) {
      // enable
 	 mcpB |= killOutPin;
    }
@@ -681,6 +681,7 @@ void loop() {
 
   if (systemVoltage < 7) {
     engineStarted = false;
+    powerOn = false;
     if (sleepCountdown) {
       if (millis() > sleepWaitStart + SLEEP_DELAY) {
         sleepCountdown = false;
@@ -694,6 +695,7 @@ void loop() {
   }
   else {
     sleepCountdown = false;
+    powerOn = true;
   }
 }
 
