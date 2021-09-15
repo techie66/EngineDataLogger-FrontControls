@@ -83,9 +83,9 @@ const uint8_t BTStatePin = B10000000;
 // MCP_GPIOB
 const uint8_t leftOutPin = B00000001;
 const uint8_t rightOutPin = B00000010;
-//TODO const uint8_t rearOutPin = B00000100; // Ignition (coils, ignition module)
+const uint8_t killOutPin = B00000100; // Ignition (coils, ignition module)
 const uint8_t brakeOutPin = B00001000;
-//TODO const uint8_t startEnableOutPin = B00010000; // starter
+const uint8_t startOutPin = B00010000; // starter
 const uint8_t hlhighOutPin = B00100000;
 const uint8_t hllowOutPin = B01000000;
 const uint8_t runningOutPin = B10000000;
@@ -93,6 +93,8 @@ const uint8_t runningOutPin = B10000000;
 // PORTC
 const uint8_t voltageInPin = A6;
 
+const uint8_t mainOutPin = 6;
+const uint8_t auxOutPin = A7;
 
 
 
@@ -485,29 +487,21 @@ void enableStart() {
    */
    return;
    // TODO
-   /* startenable is now the actual starter
+   // startenable is now the actual starter
+   // killOutPin
 
-   // If either clutch or neutral switches are grounded (engine off or on)
-   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) && (receivedCmdD & KILL_ON) ) {
+
+
+   // If either clutch, neutral, or kickstand switches are grounded (engine off or on)
+   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED | KICKSTAND_UP)) && (receivedCmdD & KILL_ON) ) {
      // enable
-	 mcpB |= startEnableOutPin;
-   }
-   // if kickstand up (engine off)
-   else if ( (receivedCmdC & KICKSTAND_UP) && !(serialCmdA & ENGINE_RUNNING) && (receivedCmdD & KILL_ON) ) {
-     // enable
-	 mcpB |= startEnableOutPin;
-   }
-   else if ( engineStarted && !(receivedCmdD & KILL_ON) && (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) ) {
-   //else if (!(receivedCmdD & KILL_ON)) {
-	 mcpB |= startEnableOutPin;
+	 mcpB |= killOutPin;
    }
    // Otherwise
    else {
      // disable
-	 mcpB &= (startEnableOutPin ^ 0xFF);
-   }
-     */
-   
+	 mcpB &= (killOutPin ^ 0xFF);
+   }   
 }
 
 void hlMode() {
@@ -646,6 +640,8 @@ void setup() {
   pinMode(leftInPin, INPUT);
   pinMode(rightInPin, INPUT);
   pinMode(voltageInPin, INPUT); // Analog for Voltage
+  pinMode(mainOutPin, OUTPUT);
+  pinMode(auxOutPin, OUTPUT);
   
   //set timer1 interrupt at 3Hz
   TCCR1A = 0;// set entire TCCR1A register to 0
