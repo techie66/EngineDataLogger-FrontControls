@@ -48,6 +48,7 @@
 #include <avr/sleep.h>
 #include <Wire.h>
 #include <mcp2515_can.h>
+#include <SoftwareSerial.h>
 
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
@@ -63,8 +64,10 @@ volatile boolean brakeStart = false;
 boolean engineStarted = false;
 float systemVoltage = 0;
 bool powerOn = false;
+bool BTConnected = false;
 volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
+SoftwareSerial BTSerial(8, 7); // RX, TX
 
 // PORTD
 const uint8_t brakeInPin = 2;
@@ -215,10 +218,11 @@ void readSensors() {
   else {
 	  inputCmdD &= (KILL_ON ^ 0xFF);
   }
-  if (inputs & B10000000 ) {
-    //in btstate
+  if (inputs & BTStatePin ) {
+    BTConnected = true;
   }
   else {
+    BTConnected = false;
   }
 }
 
@@ -297,7 +301,7 @@ void sendData() {
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
 
-  if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage)) {
+  if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage) && (currentMillis < (lastMillis + SERIAL_EXPIRE))) {
     //Nothing, everything is the same, no need to repeat ourselves
   }
   else if (currentMillis < (lastMillis + SERIAL_OUT_RATE)) {
@@ -528,11 +532,20 @@ void Wakeup_Routine()
 {
   sleep_disable();
   detachInterrupt(0);
+  detachInterrupt(1);
   power_all_enable ();                                  // power everything back on
   ADCSRA = ADCSRA_save;
+}
+
+void PostWake() {
   CAN.wake();
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  BTSerial.write("REALLYLONGSTINGTHATSHOULDWAKEUPTHEMODULEIFITISSLEEPINGSTILLWHICHITSHOULDBEBUTWHOKNOWS\r\n"); 
+  BTSerial.write("AT+RESET\r\n");
+  delay(25);
+  BTSerial.write("AT+SLEEP\r\n");
 }
+
 
 void allRelaysOff () {
   //Turns all relays off
@@ -551,18 +564,35 @@ void allRelaysOff () {
 
 void sleepNow ()
 {
+  //BTSerial.write("AT+SLEEP\r\n"); // In every conceivable case, the BT module is already put to sleep
+
+  unsigned char stmp[2] = {0, 0xFF};
+  CAN.sendMsgBuf(0xDC, 0, 2, stmp);
+  
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
   cli();                                                //disable interrupts
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
-  attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
+  attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2 (brakes)
+  attachInterrupt (1, Wakeup_Routine, FALLING);          // wake up on RISING level on D3 (Interrupts from MCP23017)
   set_sleep_mode (SLEEP_MODE_PWR_DOWN);  
   ADCSRA_save = ADCSRA;
   ADCSRA = 0;                                           //disable the ADC
   sleep_bod_disable();                                  //save power                                              
   sei();                                                //enable interrupts
   sleep_cpu ();                                         // here the device is put to sleep
+}
+
+void mainPower() {
+  if (BTConnected) {
+    digitalWrite(mainOutPin, HIGH);
+    digitalWrite(auxOutPin, HIGH);
+  }
+  else {
+    digitalWrite(mainOutPin, LOW);
+    digitalWrite(auxOutPin, LOW);
+  }
 }
 
 void doCmd() {
@@ -585,7 +615,7 @@ void doCmd() {
    *  receivedCmdD ^= serialCmdB;  // not complete
    *  receivedCmdC ^= serialCmdA;  // not complete
    */
-   
+  mainPower(); 
   hornSound();
   hlMode();
   enableStart();
@@ -606,6 +636,8 @@ void doCmd() {
 void setup() {
   Serial.begin(115200);
   //Serial.println("Startup initiated!");
+  BTSerial.begin(9600);
+  BTSerial.println("AT+SLEEP\r\n");
   Wire.begin(); // wake up I2C bus
 
   Wire.beginTransmission(0x20);
@@ -665,6 +697,7 @@ void setup() {
 
   //Serial.println("CAN Done");
 
+
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
 
   //Serial.println("Startup Complete!");
@@ -686,6 +719,7 @@ void loop() {
       if (millis() > sleepWaitStart + SLEEP_DELAY) {
         sleepCountdown = false;
         sleepNow();
+	PostWake();
       }
     }
     else {
@@ -696,6 +730,15 @@ void loop() {
   else {
     sleepCountdown = false;
     powerOn = true;
+  }
+  
+  static bool oneshot=true;
+  if (!BTConnected && oneshot) {
+    BTSerial.write("AT+SLEEP\r\n");
+    oneshot=false;
+  }
+  if (BTConnected) {
+    oneshot=true;
   }
 }
 
