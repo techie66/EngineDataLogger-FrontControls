@@ -132,7 +132,8 @@ const uint8_t RLY_ON = HIGH;
 const uint8_t RLY_OFF = LOW;
 const unsigned long blinkDelay = 350;
 const unsigned long SLEEP_DELAY = 120000;
-const unsigned long BRAKE_FLASH_INTERVAL = 50;
+const unsigned long POWER_DOWN_DELAY = 2000;
+const unsigned long BRAKE_FLASH_INTERVAL = 40;
 
 //Constants for voltage divider
 const int resistor1 = 991; //997 (992 meas)
@@ -160,6 +161,7 @@ mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
 void readSensors() {
   byte inputs=0;
   inputCmdD = PIND;
+  inputCmdD &= B11111100; // mask UART pins
   //inputCmdC = PINC;
   systemVoltage = ( analogRead(voltageInPin));
   systemVoltage = (systemVoltage / 1024) * 5.0;
@@ -279,7 +281,7 @@ void recvCmd() {
     serialCmdB = receivedByte[1]; // Overrides for PIND
     serialCmdC = receivedByte[2]; // Equivalent to PINC
     serialCmdA = receivedByte[3]; // Overrides for PINC
-    if (serialCmdA & B10000000) {
+    if (serialCmdA & ENGINE_RUNNING) {
       engineStarted = true;
     }
     // zero out local vars
@@ -313,25 +315,8 @@ void sendData() {
 	stmp[0] = inputCmdD;
 	stmp[1] = inputCmdC;
 	stmp[2] = serialCmdA;
-	stmp[3] = systemVoltage;
-	if ( inputCmdC & KICKSTAND_UP ) {
-		stmp[4] = 'K';
-	}
-	else {
-		stmp[4] = 'k';
-	}
-	if ( inputCmdC & IN_NEUTRAL ) {
-		stmp[5] = 'N';
-	}
-	else {
-		stmp[5] = 'n';
-	}
-	if ( inputCmdC & CLUTCH_DISENGAGED ) {
-		stmp[6] = 'C';
-	}
-	else {
-		stmp[6] = 'c';
-	}
+	memcpy((void*)&stmp[3],(void*)&systemVoltage,4);
+	//stmp[3] = systemVoltage;
 	CAN.sendMsgBuf(0x00, 0, 8, stmp);
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
@@ -494,18 +479,27 @@ void enableStart() {
    // startenable is now the actual starter
    // killOutPin
 
+	if ( (receivedCmdD & KILL_ON) && powerOn ) {
 
-
-   // If either clutch, neutral, or kickstand switches are grounded (engine off or on)
-   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED | KICKSTAND_UP)) && (receivedCmdD & KILL_ON) && powerOn) {
-     // enable
-	 mcpB |= killOutPin;
-   }
-   // Otherwise
-   else {
-     // disable
-	 mcpB &= (killOutPin ^ 0xFF);
-   }   
+		// If either clutch, neutral, or kickstand switches are grounded (engine off or on)
+		if ( receivedCmdC & KICKSTAND_UP ) {
+		// enable
+			mcpB |= killOutPin;
+		}
+		else if ( receivedCmdC & IN_NEUTRAL ) {
+		// enable
+			mcpB |= killOutPin;
+		}
+		// Otherwise
+		else {
+		// disable
+			mcpB &= (killOutPin ^ 0xFF);
+		}
+	}
+	else {
+	// disable
+		mcpB &= (killOutPin ^ 0xFF);
+	}
 }
 
 void hlMode() {
@@ -585,13 +579,24 @@ void sleepNow ()
 }
 
 void mainPower() {
+  static unsigned long powerOffTimer = 0;
+  static boolean powerOffBegin = false;
   if (BTConnected) {
     digitalWrite(mainOutPin, HIGH);
     digitalWrite(auxOutPin, HIGH);
+    powerOffBegin = false;
   }
-  else {
-    digitalWrite(mainOutPin, LOW);
-    digitalWrite(auxOutPin, LOW);
+  else if (!BTConnected && !(serialCmdA & ENGINE_RUNNING) ) {
+    if (powerOffBegin) {
+      if (millis() > (powerOffTimer + POWER_DOWN_DELAY) ) {
+        digitalWrite(mainOutPin, LOW);
+        digitalWrite(auxOutPin, LOW);
+      }
+    }
+    else {
+      powerOffBegin = true;
+      powerOffTimer = millis();
+    }
   }
 }
 
@@ -740,5 +745,11 @@ void loop() {
   if (BTConnected) {
     oneshot=true;
   }
+  /*if (BTSerial.available()) {
+    String BTString = BTSerial.readStringUntil('\n');
+    unsigned char stmp[10] = {0,0,0,0,0,0,0,0,0,0};
+    BTString.toCharArray(stmp,9);
+    CAN.sendMsgBuf(0xAA,0,8,stmp);
+  }*/
 }
 
