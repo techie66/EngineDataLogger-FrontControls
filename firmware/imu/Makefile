@@ -5,7 +5,7 @@ ARDUINO_DIR = /opt/arduino-1.8.19
 ARDMK_DIR = /usr/share/arduino
 #AVR_TOOLS_DIR=/home/jacob/Downloads/arduino-1.8.8/hardware/tools/avr/
 USER_LIB_PATH=/home/jacob/Arduino/libraries
-ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI
+ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI MPU6050 I2Cdev ARD1939
 
 # Build Options
 CXXFLAGS_STD += -fno-threadsafe-statics
