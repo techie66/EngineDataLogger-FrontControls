@@ -159,7 +159,7 @@ void setup() {
 
   watchdogSetup();
 }
-  spinner *s = spin_new(utf8_pat1, "Working", UTF8_CHAR_WIDTH);
+spinner *s = spin_new(utf8_pat1, "Working", UTF8_CHAR_WIDTH);
 
 void loop() {
   wdt_reset();

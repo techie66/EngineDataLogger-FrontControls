@@ -48,6 +48,7 @@
 #include <avr/sleep.h>
 #include <Wire.h>
 #include <mcp2515_can.h>
+#include "wdt.h"
 
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
@@ -303,11 +304,12 @@ void sendData() {
   else {
 	// Send CAN Packets
 	static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  systemVoltage = 13.2;
 	stmp[0] = inputCmdD;
 	stmp[1] = inputCmdC;
-	stmp[1] = serialCmdA;
-	stmp[3] = systemVoltage;
-	CAN.sendMsgBuf(0x00, 0, 8, stmp);
+	stmp[2] = uint16_t(systemVoltage*100);
+	stmp[3] = uint16_t(systemVoltage*100) >> 8;
+	CAN.sendMsgBuf(0x260, 0, 4, stmp);
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
     Serial.write(inputCmdC);
@@ -643,7 +645,7 @@ void setup() {
 
   //Serial.println("Timers Done");
   // CAN Setup
-  while (CAN_OK != CAN.begin(CAN_250KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+  while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
 	  Serial.println("CAN ERROR");
       delay(100);
   }
@@ -654,9 +656,11 @@ void setup() {
 
   //Serial.println("Startup Complete!");
   //delay(1000);
+  watchdogSetup();
 }
 
 void loop() {
+  wdt_reset();
   static unsigned long sleepWaitStart = 0;
   static boolean sleepCountdown = false;
   readSensors();
