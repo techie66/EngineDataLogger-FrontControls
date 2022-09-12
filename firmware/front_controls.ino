@@ -75,7 +75,7 @@ const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
 
 #define BTPOWER 1
-#define FC_CMD_ID 226
+#define FC_CMD_ID 0x226
 
 /********OUTPUTS***************
 Left
@@ -255,9 +255,6 @@ void recvCmd() {
     serialCmdB = receivedByte[1]; // Overrides for PIND
     serialCmdC = receivedByte[2]; // Equivalent to PINC
     serialCmdA = receivedByte[3]; // Overrides for PINC
-    if (serialCmdA & ENGINE_RUNNING) {
-      engineStarted = true;
-    }
     // zero out local vars
     //numBytesRecv = 0;
     goodRead = false;
@@ -268,18 +265,22 @@ void recvCmd() {
     lastMillis = currentMillis;
   }
   
-  while (CAN.checkReceive() == CAN_MSGAVAIL) {
-    unsigned long newID;
+  if (CAN.checkReceive() == CAN_MSGAVAIL) {
+    static unsigned long newID=0;
     byte status;
     byte newExt;
     byte newRTR;
     byte newLen;
     byte newBuf[8];
-    byte res = CAN.readMsgBufID(status,&newID,&newExt,&newRTR,&newLen,(byte*)&newBuf);
+    byte res = CAN.readMsgBuf(&newLen,(byte*)&newBuf);
+    newID = CAN.getCanId();
     if ( newID == FC_CMD_ID ) {
       serialCmdA = newBuf[3]; // Overrides for PINC
       lastMillis = currentMillis;
     }
+  }
+  if (serialCmdA & ENGINE_RUNNING) {
+    engineStarted = true;
   }
 }
 
@@ -299,7 +300,6 @@ void sendData() {
   else {
 	// Send CAN Packets
 	static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-  systemVoltage = 13.2;
 	stmp[0] = inputCmdD;
 	stmp[1] = inputCmdC;
 	stmp[2] = uint16_t(systemVoltage*100);
@@ -552,6 +552,7 @@ void PostWake() {
   BTSerial.write("AT+RESET\r\n");
   delay(25);
   BTSerial.write("AT+SLEEP\r\n");
+  wdt_enable(WDTO_1S);
 }
 
 
@@ -573,7 +574,7 @@ void allRelaysOff () {
 void sleepNow ()
 {
   //BTSerial.write("AT+SLEEP\r\n"); // In every conceivable case, the BT module is already put to sleep
-
+  wdt_disable();
   unsigned char stmp[2] = {0, 0xFF};
   CAN.sendMsgBuf(0xDC, 0, 2, stmp);
 
@@ -655,6 +656,7 @@ void doCmd() {
 }
 
 void setup() {
+  wdt_disable();
   Serial.begin(115200);
   //Serial.println("Startup initiated!");
   BTSerial.begin(9600);
