@@ -50,6 +50,7 @@
 #include <mcp2515_can.h>
 #include <NeoSWSerial.h>
 #include "wdt.h"
+#include "pins.h"
 
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
@@ -70,38 +71,11 @@ volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
 NeoSWSerial BTSerial(8, 7); // RX, TX
 
-// PORTD
-const uint8_t brakeInPin = 2;
-const uint8_t leftInPin = 4;
-const uint8_t rightInPin = 5;
-
-// MCP_GPIOA
-const uint8_t hornOutPin = B00000001;
-const uint8_t clutchInPin = B00000010;
-const uint8_t kickInPin = B00000100;
-const uint8_t neutralInPin = B00001000;
-const uint8_t hornInPin = B00010000;
-const uint8_t hlhighInPin = B00100000;
-const uint8_t killInPin = B01000000;
-const uint8_t BTStatePin = B10000000;
-
-// MCP_GPIOB
-const uint8_t leftOutPin = B00000001;
-const uint8_t rightOutPin = B00000010;
-const uint8_t killOutPin = B00000100; // Ignition (coils, ignition module)
-const uint8_t brakeOutPin = B00001000;
-const uint8_t startOutPin = B00010000; // starter
-const uint8_t hlhighOutPin = B00100000;
-const uint8_t hllowOutPin = B01000000;
-const uint8_t runningOutPin = B10000000;
-
-// PORTC
-const uint8_t voltageInPin = A6;
-
 const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
 
-
+#define BTPOWER 1
+#define FC_CMD_ID 226
 
 /********OUTPUTS***************
 Left
@@ -245,7 +219,6 @@ void recvCmd() {
     serialCmdA = 0;
   }
 
-  
   while (Serial.available() > 0) {
     if (numBytesRecv < CMD_SIZE) {
       receivedByte[numBytesRecv] = Serial.read();
@@ -295,6 +268,19 @@ void recvCmd() {
     lastMillis = currentMillis;
   }
   
+  while (CAN.checkReceive() == CAN_MSGAVAIL) {
+    unsigned long newID;
+    byte status;
+    byte newExt;
+    byte newRTR;
+    byte newLen;
+    byte newBuf[8];
+    byte res = CAN.readMsgBufID(status,&newID,&newExt,&newRTR,&newLen,(byte*)&newBuf);
+    if ( newID == FC_CMD_ID ) {
+      serialCmdA = newBuf[3]; // Overrides for PINC
+      lastMillis = currentMillis;
+    }
+  }
 }
 
 void sendData() {
@@ -398,16 +384,22 @@ ISR(TIMER1_COMPA_vect){
   }
   else {
     // - Not, turn light on and exit
-	mcpB &= (rightOutPin ^ 0xFF);
+    mcpB &= (rightOutPin ^ 0xFF);
   }
 
   if (receivedCmdD & B00110000) { // Either left, right or both, Pin 4 or 5 of PortD
-    // Disnable position markers(running lights)
-	mcpB &= (runningOutPin ^ 0xFF);
+#ifndef BTPOWER
+    mcpB |= rearOutPin;
+#endif
+    // Disable position markers(running lights)
+    mcpB &= (runningOutPin ^ 0xFF);
   }
   else { // Neither
+#ifndef BTPOWER
+    mcpB |= rearOutPin;
+#endif
     // Enable position markers(running lights)
-	mcpB |= runningOutPin;
+    mcpB |= runningOutPin;
   }
 }
 
@@ -474,8 +466,28 @@ void enableStart() {
    * only able to leave ignition on state when enabled
    * 
    * Input: neutral, clutch, kickstand, (engine running), kill switch
-
    */
+#ifndef BTPOWER
+   // If either clutch or neutral switches are grounded (engine off or on)
+   if (  (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) && (receivedCmdD & KILL_ON) ) {
+     // enable
+	 mcpB |= startEnableOutPin;
+   }
+   // if kickstand up (engine off)
+   else if ( (receivedCmdC & KICKSTAND_UP) && !(serialCmdA & ENGINE_RUNNING) && (receivedCmdD & KILL_ON) ) {
+     // enable
+	 mcpB |= startEnableOutPin;
+   }
+   else if ( engineStarted && !(receivedCmdD & KILL_ON) && (receivedCmdC & (IN_NEUTRAL | CLUTCH_DISENGAGED)) ) {
+   //else if (!(receivedCmdD & KILL_ON)) {
+	 mcpB |= startEnableOutPin;
+   }
+   // Otherwise
+   else {
+     // disable
+	 mcpB &= (startEnableOutPin ^ 0xFF);
+   }
+#else
    // TODO
    // startenable is now the actual starter
    // killOutPin
@@ -501,6 +513,7 @@ void enableStart() {
 	// disable
 		mcpB &= (killOutPin ^ 0xFF);
 	}
+#endif
 }
 
 void hlMode() {
@@ -535,7 +548,7 @@ void Wakeup_Routine()
 void PostWake() {
   CAN.wake();
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
-  BTSerial.write("REALLYLONGSTINGTHATSHOULDWAKEUPTHEMODULEIFITISSLEEPINGSTILLWHICHITSHOULDBEBUTWHOKNOWS\r\n"); 
+  BTSerial.write("REALLYLONGSTINGTHATSHOULDWAKEUPTHEMODULEIFITISSLEEPINGSTILLWHICHITSHOULDBEBUTWHOKNOWS\r\n");
   BTSerial.write("AT+RESET\r\n");
   delay(25);
   BTSerial.write("AT+SLEEP\r\n");
@@ -563,7 +576,7 @@ void sleepNow ()
 
   unsigned char stmp[2] = {0, 0xFF};
   CAN.sendMsgBuf(0xDC, 0, 2, stmp);
-  
+
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
@@ -621,7 +634,9 @@ void doCmd() {
    *  receivedCmdD ^= serialCmdB;  // not complete
    *  receivedCmdC ^= serialCmdA;  // not complete
    */
-  mainPower(); 
+#ifdef BTPOWER
+  mainPower();
+#endif
   hornSound();
   hlMode();
   enableStart();
@@ -739,7 +754,7 @@ void loop() {
     sleepCountdown = false;
     powerOn = true;
   }
-  
+
   static bool oneshot=true;
   if (!BTConnected && oneshot) {
     BTSerial.write("AT+SLEEP\r\n");

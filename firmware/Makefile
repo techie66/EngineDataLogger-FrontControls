@@ -5,7 +5,7 @@ ARDUINO_DIR = /opt/arduino-1.8.19
 ARDMK_DIR = /usr/share/arduino
 #AVR_TOOLS_DIR=/home/jacob/Downloads/arduino-1.8.8/hardware/tools/avr/
 USER_LIB_PATH=/home/jacob/Arduino/libraries
-ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI SoftwareSerial
+ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI NeoSWSerial
 
 # Build Options
 CXXFLAGS_STD += -fno-threadsafe-statics
