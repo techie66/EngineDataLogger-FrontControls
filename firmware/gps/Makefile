@@ -5,7 +5,7 @@ ARDUINO_DIR = /opt/arduino-1.8.19
 ARDMK_DIR = /usr/share/arduino
 #AVR_TOOLS_DIR=/home/jacob/Downloads/arduino-1.8.8/hardware/tools/avr/
 USER_LIB_PATH=/home/jacob/Arduino/libraries
-ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI SoftwareSerial
+ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI TinyGPSPlus SoftwareSerial CANSerial
 
 # Build Options
 CXXFLAGS_STD += -fno-threadsafe-statics
@@ -14,10 +14,9 @@ CXXFLAGS_STD += -fno-threadsafe-statics
 ISP_PROG     = stk500v1
 ISP_PORT     = /dev/ttyUSB0
 AVRDUDE_ARD_BAUDRATE = 19200
-#AVRDUDE_ARD_BAUDRATE = 115200
 
 BOARD_TAG = nano
-BOARD_SUB = atmega328
+BOARD_SUB = atmega328old
 #ARCHITECTURE = avr
 MONITOR_PORT = /dev/ttyUSB0
 
