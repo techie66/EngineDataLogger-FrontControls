@@ -58,6 +58,7 @@ NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
 #define MON Serial
 
 void setup() {
+  wdt_disable();
   Serial.begin(115200);
   Serial.println("Startup initiated!");
 
