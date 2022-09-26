@@ -108,13 +108,8 @@ void MPU_setup()
   // 38400 or slower in these cases, or use some kind of external separate
   // crystal solution for the UART timer.
 
-  // initialize device
-  Serial.println(F("Initializing I2C devices..."));
-  //mpu.initialize(); 
-  //pinMode(INTERRUPT_PIN, INPUT);
 
   // verify connection
-  Serial.println(F("Testing device connections at MPU_MY_ADDR..."));
   Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   mpu.setFullScaleAccelRange(0); // 0 = +-2g
 
@@ -134,16 +129,14 @@ void MPU_setup()
     // Calibration Time: generate offsets and calibrate our MPU6050
     //mpu.CalibrateAccel(6);// resets offsets based on current orientation
     //mpu.CalibrateGyro(6);// resets offsets based on current orientation
-    Serial.println();
-    mpu.PrintActiveOffsets();
     // turn on the DMP, now that it's ready
     Serial.println(F("Enabling DMP..."));
     mpu.setDMPEnabled(true);
 
     // enable Arduino interrupt detection
-    Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-    Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-    Serial.println(F(")..."));
+    //Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
+    //Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
+    //Serial.println(F(")..."));
     mpuIntStatus = mpu.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it

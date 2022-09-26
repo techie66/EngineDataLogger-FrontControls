@@ -31,6 +31,13 @@ void watchdogSetup(void)
   sei();
 }
 
+void watchdogDisable(void)
+{
+  MCUSR = MCUSR & B11110111;
+  wdt_disable();
+}
+
+
 ISR(WDT_vect) // Watchdog timer interrupt.
 {
   // Include your code here - be careful not to use functions they may cause the interrupt to hang and

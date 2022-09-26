@@ -58,13 +58,14 @@ NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
 #define MON Serial
 
 void setup() {
-  wdt_disable();
+  watchdogDisable();
   Serial.begin(115200);
-  Serial.println("Startup initiated!");
+  delay(50); // Necessary? to allow proper startup
+  Serial.println("Startup");
 
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
-	  Serial.println("CAN ERROR");
+	  Serial.println("CAN");
     delay(100);
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
@@ -77,7 +78,6 @@ void setup() {
   Wire.setWireTimeout(3000, true); //timeout value in uSec
   #endif
 
-  Serial.println("Startup Complete!");
   //delay(1000);
   MPU_setup();
   Serial.println("MPU Complete");
@@ -89,8 +89,6 @@ void setup() {
 void loop() {
   wdt_reset();
   unsigned char can_data[8] = {0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC};
-  // if programming failed, don't try to do anything
-  //if (!dmpReady) return;
   // read a packet from FIFO
   if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
 
