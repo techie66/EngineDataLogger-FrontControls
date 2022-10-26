@@ -32,3 +32,8 @@ const uint8_t voltageInPin = A6;
 const uint8_t BTRX = 7;
 const uint8_t BTTX = 8;
 
+// mcp2515 interrupt
+#define CAN_INT A1
+
+// Bluetooth "EN"
+#define BT_EN 9

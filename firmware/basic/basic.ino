@@ -48,7 +48,7 @@
 #include <avr/sleep.h>
 #include <Wire.h>
 #include <mcp2515_can.h>
-#include <SoftwareSerial.h>
+#include <NeoSWSerial.h>
 #include <CANSerial.h>
 #include "../pins.h"
 #include "../wdt.h"
@@ -98,19 +98,21 @@ void allRelaysOff ();
 void sleepNow ();
 
 CANSerial CS(0x6E0,CAN);
-SoftwareSerial SS(BTRX,BTTX); // NAME(RX,TX)
-//#define SS Serial
-//#define MON Serial
-#define MON CS
+NeoSWSerial BTserial(BTRX,BTTX); // NAME(RX,TX)
+#define MON Serial
+//#define MON BTserial
+//#define MON CS
 
 void setup() {
+  wdt_disable();
   Serial.begin(115200);
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
-	  Serial.println("CAN ERROR");
-      delay(100);
+    Serial.println("CAN ERROR");
+    delay(100);
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
   Serial.println("CAN Done");
 	static unsigned char UUID[6] = {0xCE, 0xF2, 0x82, 0x47, 0xEB, 0xF3};
   CS.begin(UUID,6);
@@ -201,14 +203,21 @@ void loop() {
     sleepCountdown = false;
   }
 */
-
-	// Send CAN Packets
-	static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-	stmp[0] = inputCmdD;
-	stmp[1] = inputCmdC;
-	stmp[1] = serialCmdA;
-	stmp[3] = systemVoltage;
-	CAN.sendMsgBuf(0x00, 0, 8, stmp);
+  while(Serial.available()) {
+    unsigned char myByte = Serial.read();
+    if (myByte == 'a') { 
+      // Send CAN Packets
+      static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      stmp[3] = systemVoltage;
+      CAN.sendMsgBuf(0x01, 0, 8, stmp);
+    }
+    else if (myByte == 'b') { 
+      // Send CAN Packets
+      static unsigned char stmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      stmp[3] = systemVoltage;
+      CAN.sendMsgBuf(0x02, 0, 8, stmp);
+    }
+  }
   
 }
 
