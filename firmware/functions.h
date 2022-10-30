@@ -1,4 +1,4 @@
-#include <EnableInterrupt.h>
+//#include <EnableInterrupt.h>
 
 uint8_t ADCSRA_save = 0;
 
@@ -57,12 +57,14 @@ void myDeviceISR()
 void Wakeup_Routine()
 {
   sleep_disable();
-  //detachInterrupt(0);
-  //detachInterrupt(1);
+  /*
   disableInterrupt(0);
   disableInterrupt(1);
   disableInterrupt(CAN_INT);
-  power_all_enable ();                                  // power everything back on
+  */
+  EIMSK &= B11111100;       // Disable INT0 and INT1
+  PCICR &= B11111101;       // Disable Interrupt of PC Port
+  power_all_enable ();      // power everything back on
   ADCSRA = ADCSRA_save;
   CAN.wake();
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
@@ -91,22 +93,26 @@ void sleepNow ()
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
-  cli();                                                //disable interrupts
-  sleep_enable ();                                      // enables the sleep bit in the mcucr register
-  //attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
-  //attachInterrupt (1, Wakeup_Routine, RISING);          // wake up on RISING level on D2
+  cli();                                //disable interrupts
+  sleep_enable ();                      // enables the sleep bit in the mcucr register
+  /*
   enableInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
   enableInterrupt (1, Wakeup_Routine, RISING);          // wake up on RISING level on D2
   enableInterrupt(CAN_INT, Wakeup_Routine, CHANGE);
+  */
+  EIMSK  |= B00000011; // Enable INT0 and INT1
+  EICRA  |= B00001111; // Set RISING on INT0 and INT1
+  PCICR  |= B00000010; // We activate the interrupts of the PC port
+  PCMSK1 |= B00000010; // We activate the interrupts on pin A1
 
   set_sleep_mode (SLEEP_MODE_PWR_DOWN);
   ADCSRA_save = ADCSRA;
-  ADCSRA = 0;                                           //disable the ADC
-  sleep_bod_disable();                                  //save power
-  power_all_disable ();                                 //power off ADC, Timer 0 and 1, serial
+  ADCSRA = 0;                           //disable the ADC
+  sleep_bod_disable();                  //save power
+  power_all_disable ();                 //power off ADC, Timer 0 and 1, serial
   sleep_enable();
-  sei();                                                //enable interrupts
-  sleep_cpu ();                                         // here the device is put to sleep
+  sei();                                //enable interrupts
+  sleep_cpu ();                         // here the device is put to sleep
 }
 
 void doCmd()

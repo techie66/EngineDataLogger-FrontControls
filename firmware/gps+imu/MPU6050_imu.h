@@ -15,8 +15,8 @@
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for SparkFun breakout and InvenSense evaluation board)
 // AD0 high = 0x69
-//MPU6050 mpu;
-MPU6050 mpu(0x69); // <-- use for AD0 high
+MPU6050 mpu;
+//MPU6050 mpu(0x69); // <-- use for AD0 high
 
 /* =========================================================================
    NOTE: In addition to connection 3.3v, GND, SDA, and SCL, this sketch

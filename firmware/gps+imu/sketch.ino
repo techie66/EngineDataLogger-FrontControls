@@ -19,8 +19,8 @@
 
 */
 
-//#include <avr/interrupt.h>
-#include <EnableInterrupt.h>
+#include <avr/interrupt.h>
+//#include <EnableInterrupt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <Wire.h>
@@ -40,18 +40,32 @@ TinyGPSCustom PDOP(gps,"GPGSA", 15);
 TinyGPSCustom GPSFixType(gps,"GPGSA", 2);
 TinyGPSCustom SatView(gps,"GPGSV", 3);
 NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//SoftwareSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//#define GPSrx Serial
-#define MON Serial
+
+ISR (PCINT0_vect) { // D8 -> D13
+}
+
+ISR (PCINT1_vect) { // A0 -> A5
+  Wakeup_Routine();
+}
+
+ISR (PCINT2_vect) { // D0 -> D7
+  NeoSWSerial::rxISR( PIND );
+}
+
+ISR (INT0_vect) { // D2
+  Wakeup_Routine();
+}
+
+ISR (INT1_vect) { // D3
+  Wakeup_Routine();
+}
+
 
 void setup() {
-  //Serial.begin(115200);
-  //Serial.println("Startup initiated!");
-
+  wdt_disable();
+  Serial.begin(9600);
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
-	  //Serial.println("CAN ERROR");
     delay(100);
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
@@ -67,14 +81,16 @@ void setup() {
   Wire.setWireTimeout(3000, true); //timeout value in uSec
   #endif
 
-  //Serial.println("Startup Complete!");
-  //delay(1000);
   MPU_setup();
-  //Serial.println("MPU Complete");
-  //Serial.println("Setup Complete\n");
   pinMode(BT_EN, OUTPUT);
   digitalWrite(BT_EN,HIGH);
-  enableInterrupt(BTTX, myDeviceISR, CHANGE);
+
+  //enableInterrupt(BTTX, myDeviceISR, CHANGE);
+  PCICR  |= B00000100; // We activate the interrupts of the PD port
+  PCMSK2 |= B10000000; // We activate the interrupts on pin D7
+
+  byte can_data[2] = {0xFF,0x00};
+  CAN.sendMsgBuf(0x0DD, 0, 2, can_data);
 
   watchdogSetup();
 }
@@ -86,22 +102,24 @@ void loop() {
 
   if (CAN.checkReceive() == CAN_MSGAVAIL) {
     sleepCountdown = false;
-    static unsigned long newID=0;
     byte newLen;
     byte newBuf[8];
-    byte res = CAN.readMsgBuf(&newLen,(byte*)&newBuf);
-    newID = CAN.getCanId();
+    CAN.readMsgBuf(&newLen,(byte*)&newBuf);
   }
   else {
     if (sleepCountdown) {
       if (millis() > sleepWaitStart + 10000) {
         sleepCountdown = false;
         CAN.setSleepWakeup(1);
-	disableInterrupt(BTTX);
+	//disableInterrupt(BTTX);
+        PCICR  &= B11111011; // Disable Interrupt of PD Port
         digitalWrite(BT_EN,LOW);
+        mpu.setSleepEnabled(true);
         sleepNow();
+        mpu.setSleepEnabled(false);
         digitalWrite(BT_EN,HIGH);
-        enableInterrupt(BTTX, myDeviceISR, CHANGE);
+        //enableInterrupt(BTTX, myDeviceISR, CHANGE);
+        PCICR  |= B00000100; // We activate the interrupts of the PD port
       }
     }
     else {
@@ -111,8 +129,6 @@ void loop() {
   }
 
   unsigned char can_data[8];
-  // if programming failed, don't try to do anything
-  //if (!dmpReady) return;
   // read a packet from FIFO
   if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
 
@@ -165,10 +181,10 @@ void loop() {
     uint8_t readByte;
     readByte = GPSrx.read();
     gps.encode(readByte);
-    //MON.write(readByte);
+    Serial.write(readByte);
   }
   
-  if ( gps.time.isValid() && gps.time.isUpdated() ){
+  if ( (gps.date.month() != 0) && gps.time.isUpdated() ){
     // Send Time Frame
     st_time.day = gps.date.day();
     st_time.month = gps.date.month();

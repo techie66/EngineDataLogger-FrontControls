@@ -5,7 +5,7 @@ ARDUINO_DIR = /opt/arduino/arduino-1.8.19
 ARDMK_DIR = /usr/share/arduino
 #AVR_TOOLS_DIR=/home/jacob/Downloads/arduino-1.8.8/hardware/tools/avr/
 USER_LIB_PATH=/home/jacob/Arduino/libraries
-ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI TinyGPSPlus SoftwareSerial MPU6050 I2Cdev NeoSWSerial EnableInterrupt
+ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI TinyGPSPlus SoftwareSerial MPU6050 I2Cdev NeoSWSerial
 
 # Build Options
 CXXFLAGS_STD += -fno-threadsafe-statics
@@ -16,7 +16,7 @@ ISP_PORT     = /dev/ttyUSB0
 AVRDUDE_ARD_BAUDRATE = 19200
 
 BOARD_TAG = nano
-BOARD_SUB = atmega328bare
+BOARD_SUB = atmega328
 #ARCHITECTURE = avr
 MONITOR_PORT = /dev/ttyUSB0
 
