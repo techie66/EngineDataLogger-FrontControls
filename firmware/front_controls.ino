@@ -279,7 +279,7 @@ void recvCmd() {
       lastMillis = currentMillis;
     }
   }
-  if (systemVoltage < 14) {serialCmdA |= ENGINE_RUNNING;}
+  if (systemVoltage > 14) {serialCmdA |= ENGINE_RUNNING;}
   if (serialCmdA & ENGINE_RUNNING) {
     engineStarted = true;
   }
