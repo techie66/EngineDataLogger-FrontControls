@@ -41,11 +41,12 @@ TinyGPSCustom GPSFixType(gps,"GPGSA", 2);
 TinyGPSCustom SatView(gps,"GPGSV", 3);
 NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
 
+//void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
 ISR (PCINT0_vect) { // D8 -> D13
 }
 
 ISR (PCINT1_vect) { // A0 -> A5
-  Wakeup_Routine();
 }
 
 ISR (PCINT2_vect) { // D0 -> D7
@@ -53,15 +54,14 @@ ISR (PCINT2_vect) { // D0 -> D7
 }
 
 ISR (INT0_vect) { // D2
-  Wakeup_Routine();
 }
 
 ISR (INT1_vect) { // D3
-  Wakeup_Routine();
 }
 
 
 void setup() {
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
   wdt_disable();
   Serial.begin(9600);
   // CAN Setup
@@ -70,7 +70,7 @@ void setup() {
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
-  //CAN.setSleepWakeup(1);
+  CAN.setSleepWakeup(1);
   pinMode(CAN_INT, INPUT_PULLUP);
 
   GPSrx.begin(9600);
@@ -85,7 +85,6 @@ void setup() {
   pinMode(BT_EN, OUTPUT);
   digitalWrite(BT_EN,HIGH);
 
-  //enableInterrupt(BTTX, myDeviceISR, CHANGE);
   PCICR  |= B00000100; // We activate the interrupts of the PD port
   PCMSK2 |= B10000000; // We activate the interrupts on pin D7
 
@@ -97,39 +96,36 @@ void setup() {
 
 void loop() {
   wdt_reset();
+  //static unsigned long sleepWaitStart = millis();
   static unsigned long sleepWaitStart = 0;
-  static boolean sleepCountdown = false;
 
-  if (CAN.checkReceive() == CAN_MSGAVAIL) {
-    sleepCountdown = false;
+  while (CAN.checkReceive() == CAN_MSGAVAIL) {
     byte newLen;
     byte newBuf[8];
     CAN.readMsgBuf(&newLen,(byte*)&newBuf);
-  }
-  else {
-    if (sleepCountdown) {
-      if (millis() > sleepWaitStart + 10000) {
-        sleepCountdown = false;
-        CAN.setSleepWakeup(1);
-	//disableInterrupt(BTTX);
-        PCICR  &= B11111011; // Disable Interrupt of PD Port
-        digitalWrite(BT_EN,LOW);
-        mpu.setSleepEnabled(true);
-        sleepNow();
-        mpu.setSleepEnabled(false);
-        digitalWrite(BT_EN,HIGH);
-        //enableInterrupt(BTTX, myDeviceISR, CHANGE);
-        PCICR  |= B00000100; // We activate the interrupts of the PD port
-      }
-    }
-    else {
+    unsigned long newID=0;
+    newID = CAN.getCanId();
+    if ( newID == 0x260 ) {
       sleepWaitStart = millis();
-      sleepCountdown = true;
     }
+  }
+
+  if (millis() > sleepWaitStart + 10000) {
+    PCICR  &= B11111011; // Disable Interrupt of PD Port
+    digitalWrite(BT_EN,LOW);
+    mpu.setSleepEnabled(true);
+    sleepNow();
+
+    Wakeup_Routine();
+    sleepWaitStart = millis();
+    mpu.setSleepEnabled(false);
+    digitalWrite(BT_EN,HIGH);
+    PCICR  |= B00000100; // We activate the interrupts of the PD port
   }
 
   unsigned char can_data[8];
   // read a packet from FIFO
+  
   if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
 
     // display Euler angles in degrees
@@ -169,6 +165,7 @@ void loop() {
 
   }
   
+
   // GPS stuff
   struct gps_gps_time_t st_time;
   struct gps_gps_loc_t st_loc;

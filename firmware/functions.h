@@ -43,7 +43,6 @@ void brakeLight();
 void hornSound();
 void Wakeup_Routine();
 void allRelaysOff ();
-void sleepNow ();
 void myDeviceISR();
 
 
@@ -57,11 +56,6 @@ void myDeviceISR()
 void Wakeup_Routine()
 {
   sleep_disable();
-  /*
-  disableInterrupt(0);
-  disableInterrupt(1);
-  disableInterrupt(CAN_INT);
-  */
   EIMSK &= B11111100;       // Disable INT0 and INT1
   PCICR &= B11111101;       // Disable Interrupt of PC Port
   power_all_enable ();      // power everything back on
@@ -89,28 +83,27 @@ void allRelaysOff ()
 
 void sleepNow ()
 {
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
   wdt_disable();
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
   cli();                                //disable interrupts
   sleep_enable ();                      // enables the sleep bit in the mcucr register
-  /*
-  enableInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
-  enableInterrupt (1, Wakeup_Routine, RISING);          // wake up on RISING level on D2
-  enableInterrupt(CAN_INT, Wakeup_Routine, CHANGE);
-  */
   EIMSK  |= B00000011; // Enable INT0 and INT1
   EICRA  |= B00001111; // Set RISING on INT0 and INT1
   PCICR  |= B00000010; // We activate the interrupts of the PC port
   PCMSK1 |= B00000010; // We activate the interrupts on pin A1
+  PCIFR  |= B00000111; // Clear all Pin Change Interrupt Flags
+  EIFR   |= (1<<INTF0); // Clear Interrupt Flag for INT0
+  EIFR   |= (1<<INTF1); // Clear Interrupt Flag for INT1
 
-  set_sleep_mode (SLEEP_MODE_PWR_DOWN);
   ADCSRA_save = ADCSRA;
   ADCSRA = 0;                           //disable the ADC
-  sleep_bod_disable();                  //save power
-  power_all_disable ();                 //power off ADC, Timer 0 and 1, serial
+  set_sleep_mode (SLEEP_MODE_PWR_DOWN);
   sleep_enable();
+  power_all_disable ();                 //power off ADC, Timer 0 and 1, serial
+  sleep_bod_disable();                  //save power
   sei();                                //enable interrupts
   sleep_cpu ();                         // here the device is put to sleep
 }
@@ -130,3 +123,201 @@ void doCmd()
 
 }
 
+void readSensors()
+{
+  byte inputs=0;
+  systemVoltage = ( analogRead(voltageInPin));
+  systemVoltage = (systemVoltage / 1024) * 5.0;
+  systemVoltage = systemVoltage / denominator;
+
+  // Convert inputs to standard commands
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x12); // GPIOA
+  Wire.endTransmission();
+  Wire.requestFrom(0x20, 1);
+  inputs=Wire.read();
+
+  CLUTCH_DISENGAGED = (inputs & clutchInPin);
+  KICKSTAND_UP = ( inputs & kickInPin );
+  IN_NEUTRAL = ( inputs & neutralInPin );
+  HORN_ON = ( inputs & hornInPin );
+  HIGH_BEAMS_ON = ( inputs & hlhighInPin );
+  KILL_ON = ( inputs & killInPin );
+  if (inputs & B10000000 ) {
+    //in btstate
+  }
+  BRAKE_ON = digitalRead(brakeInPin);
+  LEFT_ON = digitalRead(leftInPin);
+  RIGHT_ON = digitalRead(rightInPin);
+}
+
+
+
+ISR(TIMER1_COMPA_vect){
+  // Interrupt called when time to toggle flashers
+  
+  // Hazards
+  static bool initiate = true;
+  if (RIGHT_ON && LEFT_ON) {
+	  if (initiate) {
+		  mcpB |= leftOutPin;
+		  mcpB |= rightOutPin;
+		  initiate = false;
+	  }
+  }
+  else {
+	  initiate = true;
+  }
+
+
+  //LEFT
+  // Determine if blinking or not, bitmask
+  if (LEFT_ON) { // Pin 4 of PortD
+    //Toggle
+	mcpB ^= leftOutPin;
+  }
+  else {
+    // - Not, turn light on and exit
+	mcpB &= (leftOutPin ^ 0xFF);
+  }
+
+  //RIGHT
+  // Determine if blinking or not, bitmask
+  if (RIGHT_ON) { // Pin 5 of PortD
+    //Toggle
+	mcpB ^= rightOutPin;
+  }
+  else {
+    // - Not, turn light on and exit
+	mcpB &= (rightOutPin ^ 0xFF);
+  }
+
+  if (LEFT_ON || RIGHT_ON) { // Either left, right or both, Pin 4 or 5 of PortD
+    // Enable rear lights
+	mcpB |= rearOutPin;
+	mcpB &= (runningOutPin ^ 0xFF);
+  }
+  else { // Neither
+    // Disable rear lights
+	mcpB &= (rearOutPin ^ 0xFF);
+	mcpB |= runningOutPin;
+  }
+}
+
+void brakeLight() {
+  /*
+   * Initial turn on flashes before going steady until brake is released
+   */
+  static int i = 0;
+  static bool brakeEngaged = false;
+  static unsigned long brakeDelayStart = millis();
+  unsigned long currentMillis = millis();
+  
+  if (brakeEngaged) {
+    brakeStart=false;
+  }
+  
+  if (BRAKE_ON) {
+    if (brakeStart) {
+      /*
+       * if--else (i<14) construct prevents from tying up processor
+       * while waiting for light to flash
+       */
+      
+      if (i < 14) { // while loop would block for almost a second
+        if (currentMillis > ( brakeDelayStart + BRAKE_FLASH_INTERVAL )) {
+		  mcpB ^= brakeOutPin;
+          brakeDelayStart = currentMillis;
+          i++;
+        }
+      }
+      else {
+		mcpB |= brakeOutPin;
+        brakeStart = false;
+      }
+      
+    }
+    else {
+      mcpB |= brakeOutPin;
+      brakeEngaged = true;
+    }
+  }
+  else {
+	mcpB &= (brakeOutPin ^ 0xFF);
+    i = 0;
+    brakeEngaged = false;
+    brakeStart=true;
+  }
+}
+
+void hornSound() {
+  if (HORN_ON) {
+	mcpA |= hornOutPin;
+  }
+  else {
+	mcpA &= (hornOutPin ^ 0xFF);
+  }
+}
+
+void common_setup()
+{
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
+  wdt_disable();
+  // CAN Setup
+  while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+    delay(100);
+  }
+  CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  Wire.begin(); // wake up I2C bus
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  #ifdef __AVR__
+  Wire.setWireTimeout(3000, true); //timeout value in uSec
+  #endif
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x00); // IODIRA register
+  Wire.write(0xFE); // set pin 0 of port A to output, 1-7 to input
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x01); // IODIRB register
+  Wire.write(0x00); // set all of port B to outputs
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x04); // GPINTENA
+  Wire.write(0xFE); // 1-7 enable interrupt
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x02); // IPOLA
+  Wire.write(0x0E); // Pins 1-3 Inverted Polarity
+  Wire.endTransmission();
+
+  Wire.beginTransmission(0x20);
+  Wire.write(0x0C); // GPPUA
+  Wire.write(0x0E); // Pins 1-3 Pullup Enabled
+  Wire.endTransmission();
+
+  //set timer1 interrupt at 3Hz
+  TCCR1A = 0;// set entire TCCR1A register to 0
+  TCCR1B = 0;// same for TCCR1B
+  TCNT1  = 0;//initialize counter value to 0
+  // set compare match register for 3hz increments
+  OCR1A = 5208;// = (16*10^6) / (3*1024) - 1 (must be <65536)
+  // turn on CTC mode
+  TCCR1B |= (1 << WGM12);
+  // Set CS10 and CS12 bits for 1024 prescaler
+  TCCR1B |= (1 << CS12) | (1 << CS10);  
+  // enable timer compare interrupt
+  TIMSK1 |= (1 << OCIE1A);
+
+  pinMode(brakeInPin, INPUT);
+  pinMode(leftInPin, INPUT);
+  pinMode(rightInPin, INPUT);
+  pinMode(voltageInPin, INPUT); // Analog for Voltage
+  
+  watchdogSetup();
+}
