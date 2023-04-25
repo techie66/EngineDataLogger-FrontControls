@@ -66,6 +66,7 @@ void setup() {
   Serial.begin(9600);
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
+    Serial.println("CAN");
     delay(100);
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);

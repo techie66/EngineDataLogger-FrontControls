@@ -15,8 +15,8 @@
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for SparkFun breakout and InvenSense evaluation board)
 // AD0 high = 0x69
-MPU6050 mpu;
-//MPU6050 mpu(0x69); // <-- use for AD0 high
+#define MPU_MY_ADDR 0x68
+MPU6050 mpu(MPU_MY_ADDR);
 
 /* =========================================================================
    NOTE: In addition to connection 3.3v, GND, SDA, and SCL, this sketch
@@ -132,8 +132,6 @@ void MPU_setup()
     // Calibration Time: generate offsets and calibrate our MPU6050
     //mpu.CalibrateAccel(6);// resets offsets based on current orientation
     //mpu.CalibrateGyro(6);// resets offsets based on current orientation
-    //Serial.println();
-    //mpu.PrintActiveOffsets();
     // turn on the DMP, now that it's ready
     //Serial.println(F("Enabling DMP..."));
     mpu.setDMPEnabled(true);
