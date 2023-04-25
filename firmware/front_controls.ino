@@ -553,7 +553,8 @@ void PostWake() {
   BTSerial.write("AT+RESET\r\n");
   delay(25);
   BTSerial.write("AT+SLEEP\r\n");
-  wdt_enable(WDTO_1S);
+  //wdt_enable(WDTO_1S);
+  watchdogSetup();
 }
 
 
@@ -575,6 +576,7 @@ void allRelaysOff () {
 void sleepNow ()
 {
   //BTSerial.write("AT+SLEEP\r\n"); // In every conceivable case, the BT module is already put to sleep
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
   wdt_disable();
   unsigned char stmp[2] = {0, 0xFF};
   CAN.sendMsgBuf(0xDC, 0, 2, stmp);
@@ -586,6 +588,8 @@ void sleepNow ()
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
   attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2 (brakes)
   attachInterrupt (1, Wakeup_Routine, FALLING);          // wake up on RISING level on D3 (Interrupts from MCP23017)
+  EIFR = bit (INTF0);                                   // Clear flag for interrupt 0
+  EIFR = bit (INTF1);                                   // Clear flag for interrupt 1
   set_sleep_mode (SLEEP_MODE_PWR_DOWN);  
   ADCSRA_save = ADCSRA;
   ADCSRA = 0;                                           //disable the ADC
@@ -657,6 +661,7 @@ void doCmd() {
 }
 
 void setup() {
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
   wdt_disable();
   Serial.begin(115200);
   //Serial.println("Startup initiated!");
