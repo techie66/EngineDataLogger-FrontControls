@@ -69,7 +69,7 @@ bool powerOn = false;
 bool BTConnected = false;
 volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
-NeoSWSerial BTSerial(8, 7); // RX, TX
+NeoSWSerial BTSerial(BTTX, BTRX); // RX, TX (TX->RX)
 
 const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
@@ -130,8 +130,7 @@ const uint8_t KICKSTAND_UP = B00001000;         //receivedCmdC
 //ADD MORE HERE
 
 // CAN Constants
-const int SPI_CS_PIN = 10;
-mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
+mcp2515_can CAN(CAN_CS_PIN); // Set CS pin (defined in pins.h)
 
 void readSensors() {
   byte inputs=0;
@@ -279,6 +278,9 @@ void recvCmd() {
       lastMillis = currentMillis;
     }
   }
+  // This is an override condition. The logic is that system voltages above 14V
+  //  indicate the engine is running, and we'd like to act accordingly
+  //  i.e. keep headlights on even if the CAN bus stops working correctly.
   if (systemVoltage > 14) {serialCmdA |= ENGINE_RUNNING;}
   if (serialCmdA & ENGINE_RUNNING) {
     engineStarted = true;
@@ -539,14 +541,16 @@ void hlMode() {
 
 void Wakeup_Routine()
 {
+  brakeStart = true;
+  mcpB |= brakeOutPin;
+}
+
+void PostWake() {
   sleep_disable();
   detachInterrupt(0);
   detachInterrupt(1);
   power_all_enable ();                                  // power everything back on
   ADCSRA = ADCSRA_save;
-}
-
-void PostWake() {
   CAN.wake();
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
   BTSerial.write("REALLYLONGSTINGTHATSHOULDWAKEUPTHEMODULEIFITISSLEEPINGSTILLWHICHITSHOULDBEBUTWHOKNOWS\r\n");
@@ -763,7 +767,7 @@ void loop() {
     powerOn = true;
   }
 
-  static bool oneshot=true;
+  static bool oneshot=false;
   if (!BTConnected && oneshot) {
     BTSerial.write("AT+SLEEP\r\n");
     oneshot=false;

@@ -34,6 +34,7 @@ const uint8_t BTTX = 8;
 
 // mcp2515 interrupt
 #define CAN_INT A1
+const int CAN_CS_PIN = 10;
 
 // Bluetooth "EN"
 #define BT_EN 9
