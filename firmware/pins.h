@@ -3,6 +3,22 @@ const uint8_t brakeInPin = 2;
 const uint8_t leftInPin = 4;
 const uint8_t rightInPin = 5;
 
+// 3.3V pins labeled BTTX and BTRX
+const uint8_t BTRX = 7;
+const uint8_t BTTX = 8;
+
+// Bluetooth "EN"
+#define BT_EN 9
+
+// mcp2515 interrupt
+#define CAN_INT A1
+const int CAN_CS_PIN = 10;
+
+// SPI Pins
+// SPI_MOSI = 11;
+// SPI_MISO = 12;
+// SPI_SCK = 13; // turns on LED dim when active
+
 // MCP_GPIOA
 const uint8_t hornOutPin = B00000001;
 const uint8_t clutchInPin = B00000010;
@@ -27,14 +43,3 @@ const uint8_t runningOutPin = B10000000;
 
 // PORTC
 const uint8_t voltageInPin = A6;
-
-// 3.3V pins labeled BTTX and BTRX
-const uint8_t BTRX = 7;
-const uint8_t BTTX = 8;
-
-// mcp2515 interrupt
-#define CAN_INT A1
-const int CAN_CS_PIN = 10;
-
-// Bluetooth "EN"
-#define BT_EN 9

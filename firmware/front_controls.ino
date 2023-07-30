@@ -103,6 +103,7 @@ voltage
 const uint8_t CMD_SIZE = 4;  // WIP see doCmd()
 const uint16_t SERIAL_OUT_RATE = 50;
 const unsigned long SERIAL_EXPIRE = 4000;
+const unsigned long BT_INTERVAL = 1000;
 const uint8_t RLY_ON = HIGH;
 const uint8_t RLY_OFF = LOW;
 const unsigned long blinkDelay = 350;
@@ -194,10 +195,12 @@ void readSensors() {
   else {
 	  inputCmdD &= (KILL_ON ^ 0xFF);
   }
+  static unsigned long btLastSeen = 0;
   if (inputs & BTStatePin ) {
     BTConnected = true;
+    btLastSeen = millis();
   }
-  else {
+  else if ( millis() - btLastSeen > BT_INTERVAL ) {
     BTConnected = false;
   }
 }
@@ -216,6 +219,7 @@ void recvCmd() {
     serialCmdB = 0;
     serialCmdC = 0;
     serialCmdA = 0;
+    lastMillis = currentMillis;
   }
 
   while (Serial.available() > 0) {
@@ -264,14 +268,11 @@ void recvCmd() {
     lastMillis = currentMillis;
   }
   
-  if (CAN.checkReceive() == CAN_MSGAVAIL) {
+  while (CAN.checkReceive() == CAN_MSGAVAIL) {
     static unsigned long newID=0;
-    byte status;
-    byte newExt;
-    byte newRTR;
     byte newLen;
     byte newBuf[8];
-    byte res = CAN.readMsgBuf(&newLen,(byte*)&newBuf);
+    CAN.readMsgBuf(&newLen,(byte*)&newBuf);
     newID = CAN.getCanId();
     if ( newID == FC_CMD_ID ) {
       serialCmdA = newBuf[3]; // Overrides for PINC
@@ -553,10 +554,12 @@ void PostWake() {
   ADCSRA = ADCSRA_save;
   CAN.wake();
   CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  /*
   BTSerial.write("REALLYLONGSTINGTHATSHOULDWAKEUPTHEMODULEIFITISSLEEPINGSTILLWHICHITSHOULDBEBUTWHOKNOWS\r\n");
   BTSerial.write("AT+RESET\r\n");
   delay(25);
   BTSerial.write("AT+SLEEP\r\n");
+  */
   //wdt_enable(WDTO_1S);
   watchdogSetup();
 }
@@ -579,7 +582,10 @@ void allRelaysOff () {
 
 void sleepNow ()
 {
-  //BTSerial.write("AT+SLEEP\r\n"); // In every conceivable case, the BT module is already put to sleep
+  /*
+  BTSerial.write("AT+SLEEP\r\n"); // In every conceivable case, the BT module is already put to sleep
+  BTSerial.flush();
+  */
   MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
   wdt_disable();
   unsigned char stmp[2] = {0, 0xFF};
@@ -588,6 +594,7 @@ void sleepNow ()
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
+  delay(50);
   cli();                                                //disable interrupts
   sleep_enable ();                                      // enables the sleep bit in the mcucr register
   attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2 (brakes)
@@ -669,8 +676,10 @@ void setup() {
   wdt_disable();
   Serial.begin(115200);
   //Serial.println("Startup initiated!");
+  /*
   BTSerial.begin(9600);
   BTSerial.println("AT+SLEEP\r\n");
+  */
   Wire.begin(); // wake up I2C bus
 
   Wire.beginTransmission(0x20);
@@ -767,7 +776,7 @@ void loop() {
     powerOn = true;
   }
 
-  static bool oneshot=false;
+  /*static bool oneshot=false;
   if (!BTConnected && oneshot) {
     BTSerial.write("AT+SLEEP\r\n");
     oneshot=false;
@@ -775,6 +784,7 @@ void loop() {
   if (BTConnected) {
     oneshot=true;
   }
+  */
   /*if (BTSerial.available()) {
     String BTString = BTSerial.readStringUntil('\n');
     unsigned char stmp[10] = {0,0,0,0,0,0,0,0,0,0};
