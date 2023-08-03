@@ -420,6 +420,11 @@ void autoCancelBlinkers() {
   }
 }
 
+ISR(INT0_vect) {
+  brakeStart = true;
+  mcpB |= brakeOutPin;
+}
+
 void setup() {
   Serial.begin(115200);
   common_setup(); // functions.h
@@ -455,6 +460,7 @@ void loop() {
         unsigned char stmp[2] = {0, 0xFF};
         CAN.sendMsgBuf(0xDC, 0, 2, stmp);
         sleepNow();
+        Wakeup_Routine();
       }
     }
     else {

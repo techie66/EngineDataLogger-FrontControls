@@ -93,7 +93,7 @@ void sleepNow ()
   cli();                                //disable interrupts
   sleep_enable ();                      // enables the sleep bit in the mcucr register
   EIMSK  |= B00000011; // Enable INT0 and INT1
-  EICRA  |= B00001111; // Set RISING on INT0 and INT1
+  EICRA  |= B00001011; // Set RISING on INT0 and FALLING on INT1
   PCICR  |= B00000010; // We activate the interrupts of the PC port
   PCMSK1 |= B00000010; // We activate the interrupts on pin A1
   PCIFR  |= B00000111; // Clear all Pin Change Interrupt Flags
