@@ -8,6 +8,7 @@ boolean engineStarted = false;
 float systemVoltage = 0;
 volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
+volatile bool leftOverridden = false, rightOverriden = false;
 
 
 const unsigned long BT_INTERVAL = 1000;
@@ -183,7 +184,7 @@ ISR(TIMER1_COMPA_vect){
 
   //LEFT
   // Determine if blinking or not, bitmask
-  if (LEFT_ON) { // Pin 4 of PortD
+  if (LEFT_ON && !leftOverridden) { // Pin 4 of PortD
     //Toggle
 	mcpB ^= leftOutPin;
   }
@@ -194,7 +195,7 @@ ISR(TIMER1_COMPA_vect){
 
   //RIGHT
   // Determine if blinking or not, bitmask
-  if (RIGHT_ON) { // Pin 5 of PortD
+  if (RIGHT_ON && !rightOverridden) { // Pin 5 of PortD
     //Toggle
 	mcpB ^= rightOutPin;
   }

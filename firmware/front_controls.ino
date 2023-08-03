@@ -184,7 +184,7 @@ void recvCmd() {
       // check for 3501
     }
     if (CanId == IMU_POS_ID ) {
-      yaw = (CanBuf[3] + ((CanBuf[4]&0x001F)<<8))/10;
+      yaw = (CanBuf[3] + (((int)CanBuf[4]&0x001F)<<8))/10;
     }
   }
   // This is an override condition. The logic is that system voltages above 14V
@@ -221,9 +221,6 @@ void sendData() {
   static float lastVoltage;
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
-
-  inputCmdC = convert_to_inputCmdC();
-  inputCmdD = convert_to_inputCmdD();
 
   if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage) && (currentMillis < (lastMillis + SERIAL_EXPIRE))) {
     //Nothing, everything is the same, no need to repeat ourselves
@@ -405,7 +402,6 @@ uint16_t diffYaw(uint16_t start, uint16_t end) {
 void autoCancelBlinkers() {
   static int startYaw;
   static bool leftBlinkStart = false, rightBlinkStart = false;
-  static bool leftOverridden = false, rightOverriden = false;
   if ( LEFT_ON ) {
     if ( leftBlinkStart ) {
       if ( diffYaw(startYaw,yaw) > 50 ) {
@@ -452,8 +448,10 @@ void loop() {
   static unsigned long sleepWaitStart = 0;
   static boolean sleepCountdown = false;
   readSensors();
-  recvCmd();
   autoCancelBlinkers();
+  recvCmd();
+  inputCmdC = convert_to_inputCmdC();
+  inputCmdD = convert_to_inputCmdD();
   doMyCmd();
   sendData();
 
