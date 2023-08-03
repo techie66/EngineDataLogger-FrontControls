@@ -20,31 +20,19 @@
 */
 
 #include <avr/interrupt.h>
+//#include <EnableInterrupt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <Wire.h>
 #include <mcp2515_can.h>
 #include "MPU6050_imu.h"
-#include "../wdt.h"
 #include <NeoSWSerial.h>
-//#include <SoftwareSerial.h>
+#include "../wdt.h"
+#include "../pins.h"
+#include "../functions.h"
 
 #include <TinyGPSPlus.h>
 #include "gps.h" // CAN DBC functions
-
-uint8_t ADCSRA_save = 0;
-// 3.3V pins labeled BTTX and BTRX
-const uint8_t BTRX = 7;
-const uint8_t BTTX = 8;
-
-
-// CAN Constants
-const int SPI_CS_PIN = 10;
-mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
-
-// Function Prototypes
-void sleepNow ();
-void Wakeup_Routine();
 
 TinyGPSPlus gps;
 TinyGPSCustom VDOP(gps,"GPGSA", 17);
@@ -52,23 +40,39 @@ TinyGPSCustom PDOP(gps,"GPGSA", 15);
 TinyGPSCustom GPSFixType(gps,"GPGSA", 2);
 TinyGPSCustom SatView(gps,"GPGSV", 3);
 NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//NeoSWSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//SoftwareSerial GPSrx(BTRX,BTTX); // NAME(RX,TX)
-//#define GPSrx Serial
-#define MON Serial
+
+//void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
+ISR (PCINT0_vect) { // D8 -> D13
+}
+
+ISR (PCINT1_vect) { // A0 -> A5
+}
+
+ISR (PCINT2_vect) { // D0 -> D7
+  NeoSWSerial::rxISR( PIND );
+}
+
+ISR (INT0_vect) { // D2
+}
+
+ISR (INT1_vect) { // D3
+}
+
 
 void setup() {
-  watchdogDisable();
-  Serial.begin(115200);
-  delay(50); // Necessary? to allow proper startup
-  Serial.println("Startup");
-
+  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
+  wdt_disable();
+  Serial.begin(9600);
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
-	  Serial.println("CAN");
+    Serial.println("CAN");
     delay(100);
   }
   CAN.mcpPinMode(MCP_RX0BF,MCP_PIN_OUT);
+  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
+  CAN.setSleepWakeup(1);
+  pinMode(CAN_INT, INPUT_PULLUP);
 
   GPSrx.begin(9600);
 
@@ -78,18 +82,51 @@ void setup() {
   Wire.setWireTimeout(3000, true); //timeout value in uSec
   #endif
 
-  //delay(1000);
   MPU_setup();
-  Serial.println("MPU Complete");
-  Serial.println("Setup Complete\n");
+  pinMode(BT_EN, OUTPUT);
+  digitalWrite(BT_EN,HIGH);
+
+  PCICR  |= B00000100; // We activate the interrupts of the PD port
+  PCMSK2 |= B10000000; // We activate the interrupts on pin D7
+
+  byte can_data[2] = {0xFF,0x00};
+  CAN.sendMsgBuf(0x0DD, 0, 2, can_data);
 
   watchdogSetup();
 }
 
 void loop() {
   wdt_reset();
-  unsigned char can_data[8] = {0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC};
+  //static unsigned long sleepWaitStart = millis();
+  static unsigned long sleepWaitStart = 0;
+
+  while (CAN.checkReceive() == CAN_MSGAVAIL) {
+    byte newLen;
+    byte newBuf[8];
+    CAN.readMsgBuf(&newLen,(byte*)&newBuf);
+    unsigned long newID=0;
+    newID = CAN.getCanId();
+    if ( newID == 0x260 ) {
+      sleepWaitStart = millis();
+    }
+  }
+
+  if (millis() > sleepWaitStart + 10000) {
+    PCICR  &= B11111011; // Disable Interrupt of PD Port
+    digitalWrite(BT_EN,LOW);
+    mpu.setSleepEnabled(true);
+    sleepNow();
+
+    Wakeup_Routine();
+    sleepWaitStart = millis();
+    mpu.setSleepEnabled(false);
+    digitalWrite(BT_EN,HIGH);
+    PCICR  |= B00000100; // We activate the interrupts of the PD port
+  }
+
+  unsigned char can_data[8];
   // read a packet from FIFO
+  
   if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
 
     // display Euler angles in degrees
@@ -129,6 +166,7 @@ void loop() {
 
   }
   
+
   // GPS stuff
   struct gps_gps_time_t st_time;
   struct gps_gps_loc_t st_loc;
@@ -141,10 +179,10 @@ void loop() {
     uint8_t readByte;
     readByte = GPSrx.read();
     gps.encode(readByte);
-    //MON.write(readByte);
+    Serial.write(readByte);
   }
   
-  if ( gps.time.isValid() && gps.time.isUpdated() ){
+  if ( (gps.date.month() != 0) && gps.time.isUpdated() ){
     // Send Time Frame
     st_time.day = gps.date.day();
     st_time.month = gps.date.month();
@@ -214,30 +252,5 @@ void loop() {
         can_data[i]=0;
     }
   }
-}
-
-void Wakeup_Routine()
-{
-  sleep_disable();
-  detachInterrupt(0);
-  power_all_enable ();                                  // power everything back on
-  ADCSRA = ADCSRA_save;
-  CAN.wake();
-  CAN.mcpDigitalWrite(MCP_RX0BF,LOW);
-}
-
-void sleepNow ()
-{
-  CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
-  CAN.sleep();
-  cli();                                                //disable interrupts
-  sleep_enable ();                                      // enables the sleep bit in the mcucr register
-  attachInterrupt (0, Wakeup_Routine, RISING);          // wake up on RISING level on D2
-  set_sleep_mode (SLEEP_MODE_PWR_DOWN);  
-  ADCSRA_save = ADCSRA;
-  ADCSRA = 0;                                           //disable the ADC
-  sleep_bod_disable();                                  //save power                                              
-  sei();                                                //enable interrupts
-  sleep_cpu ();                                         // here the device is put to sleep
 }
 
