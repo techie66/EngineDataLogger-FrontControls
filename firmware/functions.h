@@ -2,6 +2,7 @@
 
 uint8_t ADCSRA_save = 0;
 
+bool BTConnected = false;
 volatile boolean brakeStart = false;
 boolean engineStarted = false;
 float systemVoltage = 0;
@@ -9,11 +10,12 @@ volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
 
 
+const unsigned long BT_INTERVAL = 1000;
 const uint8_t RLY_ON = HIGH;
 const uint8_t RLY_OFF = LOW;
 const unsigned long blinkDelay = 350;
 const unsigned long SLEEP_DELAY = 120000;
-const unsigned long BRAKE_FLASH_INTERVAL = 50;
+const unsigned long BRAKE_FLASH_INTERVAL = 40;
 
 //Constants for voltage divider
 const int resistor1 = 991; //997 (992 meas)
@@ -101,7 +103,6 @@ void sleepNow ()
   ADCSRA_save = ADCSRA;
   ADCSRA = 0;                           //disable the ADC
   set_sleep_mode (SLEEP_MODE_PWR_DOWN);
-  sleep_enable();
   power_all_disable ();                 //power off ADC, Timer 0 and 1, serial
   sleep_bod_disable();                  //save power
   sei();                                //enable interrupts
@@ -150,6 +151,15 @@ void readSensors()
   BRAKE_ON = digitalRead(brakeInPin);
   LEFT_ON = digitalRead(leftInPin);
   RIGHT_ON = digitalRead(rightInPin);
+
+  static unsigned long btLastSeen = 0;
+  if (inputs & BTStatePin ) {
+    BTConnected = true;
+    btLastSeen = millis();
+  }
+  else if ( millis() - btLastSeen > BT_INTERVAL ) {
+    BTConnected = false;
+  }
 }
 
 
@@ -195,12 +205,16 @@ ISR(TIMER1_COMPA_vect){
 
   if (LEFT_ON || RIGHT_ON) { // Either left, right or both, Pin 4 or 5 of PortD
     // Enable rear lights
+#ifndef BTPOWER
 	mcpB |= rearOutPin;
+#endif
 	mcpB &= (runningOutPin ^ 0xFF);
   }
   else { // Neither
     // Disable rear lights
+#ifndef BTPOWER
 	mcpB &= (rearOutPin ^ 0xFF);
+#endif
 	mcpB |= runningOutPin;
   }
 }

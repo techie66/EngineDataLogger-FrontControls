@@ -8,7 +8,7 @@ USER_LIB_PATH=/home/jacob/Arduino/libraries
 ARDUINO_LIBS=Seeed_Arduino_CAN Wire SPI NeoSWSerial CANSerial
 
 # Build Options
-CXXFLAGS_STD += -fno-threadsafe-statics
+CXXFLAGS_STD += -fno-threadsafe-statics -Wall
 
 # ISP Specific stuff if using ArduinoISP
 ISP_PROG     = stk500v1
