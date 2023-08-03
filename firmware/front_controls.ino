@@ -216,7 +216,7 @@ void sendData() {
 	stmp[1] = inputCmdC;
 	stmp[2] = uint16_t(systemVoltage*100);
 	stmp[3] = uint16_t(systemVoltage*100) >> 8;
-	CAN.MCP_CAN::sendMsgBuf(0x260, 0, 4, stmp);
+	CAN.sendMsgBuf(0x260, 0, 4, stmp);
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
     Serial.write(inputCmdC);
@@ -453,7 +453,7 @@ void loop() {
       if (millis() > sleepWaitStart + SLEEP_DELAY) {
         sleepCountdown = false;
         unsigned char stmp[2] = {0, 0xFF};
-        CAN.MCP_CAN::sendMsgBuf(0xDC, 0, 2, stmp);
+        CAN.sendMsgBuf(0xDC, 0, 2, stmp);
         sleepNow();
       }
     }
