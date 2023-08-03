@@ -43,3 +43,19 @@ const uint8_t runningOutPin = B10000000;
 
 // PORTC
 const uint8_t voltageInPin = A6;
+
+
+/*
+ * Constants for Cmd flags
+const uint8_t ENGINE_RUNNING = B10000000;       // serialCmdA
+const uint8_t BRAKE_ON = B00000100;             //receivedCmdD
+const uint8_t HORN_ON = B00001000;              //receivedCmdD
+const uint8_t LEFT_ON = B00010000;              //receivedCmdD
+const uint8_t RIGHT_ON = B00100000;             //receivedCmdD
+const uint8_t HIGH_BEAMS_ON = B01000000;        //receivedCmdD
+const uint8_t KILL_ON = B10000000;              //receivedCmdD
+
+const uint8_t CLUTCH_DISENGAGED = B00000100;    //receivedCmdC
+const uint8_t IN_NEUTRAL  = B00010000;          //receivedCmdC
+const uint8_t KICKSTAND_UP = B00001000;         //receivedCmdC
+ */

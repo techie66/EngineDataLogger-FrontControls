@@ -196,12 +196,34 @@ void recvCmd() {
   }
 }
 
+uint8_t convert_to_inputCmdD(){
+  uint8_t value = 0;
+  value |= BRAKE_ON << 2;
+  value |= HORN_ON << 3;
+  value |= LEFT_ON << 4;
+  value |= RIGHT_ON << 5;
+  value |= HIGH_BEAMS_ON << 6;
+  value |= KILL_ON << 7;
+  return value;
+}
+
+uint8_t convert_to_inputCmdC(){
+  uint8_t value = 0;
+  value |= CLUTCH_DISENGAGED << 2;
+  value |= KICKSTAND_UP << 3;
+  value |= IN_NEUTRAL << 4;
+  return value;
+}
+
 void sendData() {
   static uint8_t lastCmdD;
   static uint8_t lastCmdC;
   static float lastVoltage;
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
+
+  inputCmdC = convert_to_inputCmdC();
+  inputCmdD = convert_to_inputCmdD();
 
   if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage) && (currentMillis < (lastMillis + SERIAL_EXPIRE))) {
     //Nothing, everything is the same, no need to repeat ourselves
@@ -361,25 +383,9 @@ void mainPower() {
 }
 
 void doMyCmd() {// FIX
-  // execute the command
-  //TODO figure out priority of serial vs GPIO commands
-  /*  On if either On
-   *   Use extra cmd space to override off
-   *   two bytes to OR with input
-   *   two bytes to XOR mask resulting command set
-   *   extra bits are status flags (eg. serialCmdA B11000000 and serialCmdB B00000011)
-   */
   // Hack to pretend that engine is running
   //serialCmdA |= B10000000;
   
-  receivedCmdD = inputCmdD | serialCmdD;
-  //receivedCmdB = inputCmdB | serialCmdB; // overrides, Don't need
-  receivedCmdC = inputCmdC | serialCmdC;
-
-  /* Enable Overrides
-   *  receivedCmdD ^= serialCmdB;  // not complete
-   *  receivedCmdC ^= serialCmdA;  // not complete
-   */
 #ifdef BTPOWER
   mainPower();
 #endif
@@ -392,7 +398,7 @@ void doMyCmd() {// FIX
 }
 uint16_t diffYaw(uint16_t start, uint16_t end) {
   uint16_t diff = start - end;
-  diff = abs((diff + 180)%360) -180;
+  diff = abs((abs(diff) + 180)%360 -180);
   return diff;
 }
 
