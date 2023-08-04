@@ -427,6 +427,10 @@ ISR(INT0_vect) {
   mcpB |= brakeOutPin;
 }
 
+ISR(INT1_vect) {
+  // Nothing to do really...
+}
+
 void setup() {
   Serial.begin(115200);
   common_setup(); // functions.h
@@ -463,6 +467,7 @@ void loop() {
         sleepCountdown = false;
         unsigned char stmp[2] = {0, 0xFF};
         CAN.sendMsgBuf(0xDC, 0, 2, stmp);
+        delay(20); // allow CAN msg to send
         sleepNow();
         Wakeup_Routine();
       }

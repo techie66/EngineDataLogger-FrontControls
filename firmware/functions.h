@@ -8,7 +8,7 @@ boolean engineStarted = false;
 float systemVoltage = 0;
 volatile uint8_t mcpA = 0; // Output buffer for GPIOA
 volatile uint8_t mcpB = 0; // Output buffer for GPIOB
-volatile bool leftOverridden = false, rightOverriden = false;
+volatile bool leftOverridden = false, rightOverridden = false;
 
 
 const unsigned long BT_INTERVAL = 1000;
@@ -86,11 +86,11 @@ void allRelaysOff ()
 
 void sleepNow ()
 {
-  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
-  wdt_disable();
+  watchdogDisable();
   allRelaysOff();
   CAN.mcpDigitalWrite(MCP_RX0BF,HIGH);
   CAN.sleep();
+  delay(50);
   cli();                                //disable interrupts
   sleep_enable ();                      // enables the sleep bit in the mcucr register
   EIMSK  |= B00000011; // Enable INT0 and INT1
@@ -277,8 +277,7 @@ void hornSound() {
 
 void common_setup()
 {
-  MCUSR = MCUSR & B11110111; // Clear the reset flag, the WDRF bit (bit 3) of MCUSR.
-  wdt_disable();
+  watchdogDisable();
   // CAN Setup
   while (CAN_OK != CAN.begin(CAN_500KBPS,MCP_12MHz)) {             // init can bus : baudrate = 500k
     delay(100);
