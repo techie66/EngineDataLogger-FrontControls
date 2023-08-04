@@ -66,7 +66,7 @@ uint8_t receivedCmdD;
 uint8_t receivedCmdC;
 bool powerOn = false;
 NeoSWSerial BTSerial(BTTX, BTRX); // RX, TX (TX->RX)
-uint16_t yaw;
+int yaw;
 const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
 
@@ -184,7 +184,7 @@ void recvCmd() {
       // check for 3501
     }
     if (CanId == IMU_POS_ID ) {
-      yaw = (CanBuf[3] + (((int)CanBuf[4]&0x001F)<<8))/10;
+      yaw = ((CanBuf[3] + (((int)CanBuf[4]&0x001F)<<8))/10) - 360;
     }
   }
   // This is an override condition. The logic is that system voltages above 14V
@@ -290,7 +290,7 @@ void enableStart() {
    */
 #ifndef BTPOWER
    // If either clutch or neutral switches are grounded (engine off or on)
-   if (  ((IN_NEUTRAL || CLUTCH_DISENGAGED) && (KILL_ON) ) {
+   if (  ((IN_NEUTRAL || CLUTCH_DISENGAGED) && (KILL_ON) )) {
      // enable
 	 mcpB |= startEnableOutPin;
    }
@@ -394,7 +394,7 @@ void doMyCmd() {// FIX
   doCmd(); // Writes to GPIO expander
 }
 uint16_t diffYaw(uint16_t start, uint16_t end) {
-  uint16_t diff = start - end;
+  int diff = start - end;
   diff = abs((abs(diff) + 180)%360 -180);
   return diff;
 }
@@ -402,6 +402,12 @@ uint16_t diffYaw(uint16_t start, uint16_t end) {
 void autoCancelBlinkers() {
   static int startYaw;
   static bool leftBlinkStart = false, rightBlinkStart = false;
+
+  if ( LEFT_ON && RIGHT_ON ) {
+    return;
+  }
+
+  // LEFT
   if ( LEFT_ON ) {
     if ( leftBlinkStart ) {
       if ( diffYaw(startYaw,yaw) > 50 ) {
@@ -420,6 +426,26 @@ void autoCancelBlinkers() {
     leftOverridden = false;
     leftBlinkStart = false;
   }
+  // RIGHT
+  if ( RIGHT_ON ) {
+    if ( rightBlinkStart ) {
+      if ( diffYaw(startYaw,yaw) > 50 ) {
+        rightOverridden = true;
+      }
+      if ( rightOverridden ) {
+        RIGHT_ON = false;
+      }
+    }
+    else {
+      rightBlinkStart = true;
+      startYaw = yaw;
+    }
+  }
+  else { // LEFT-OFF
+    rightOverridden = false;
+    rightBlinkStart = false;
+  }
+  return;
 }
 
 ISR(INT0_vect) {
