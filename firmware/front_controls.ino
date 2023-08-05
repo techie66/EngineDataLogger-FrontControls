@@ -73,6 +73,7 @@ const uint8_t auxOutPin = A3;
 #define BTPOWER 1
 #define FC_CMD_ID 0x226
 #define IMU_POS_ID 0x1CECFF80
+#define OBD_ADDRESS 0x7EA
 
 /********OUTPUTS***************
 Left
@@ -181,7 +182,19 @@ void recvCmd() {
       lastMillis = currentMillis;
     }
     if ( CanId == 0x7DF ) { // OBD2 request
-      // check for 3501
+      uint8_t obd_service = CanBuf[1] & B00111111;
+      uint8_t obd_pid = CanBuf[2];
+      if ( obd_service == 0x35 ) {
+        if ( obd_pid == 1 ) {
+          byte _response[8] = {0};
+          _response[0] = 4;
+          _response[1] = obd_service + 0x40;
+          _response[2] = obd_pid;
+          _response[3] = 0;
+          _response[4] = LEFT_ON | RIGHT_ON << 1 | HIGH_BEAMS_ON << 2;
+          CAN.sendMsgBuf(OBD_ADDRESS, 0, 8, _response);
+        }
+      }
     }
     if (CanId == IMU_POS_ID ) {
       yaw = ((CanBuf[3] + (((int)CanBuf[4]&0x001F)<<8))/10) - 360;
@@ -190,7 +203,10 @@ void recvCmd() {
   // This is an override condition. The logic is that system voltages above 14V
   //  indicate the engine is running, and we'd like to act accordingly
   //  i.e. keep headlights on even if the CAN bus stops working correctly.
-  if (systemVoltage > 14) {serialCmdA |= ENGINE_RUNNING;}
+  if (systemVoltage > 14) {
+    serialCmdA |= ENGINE_RUNNING;
+    lastMillis = currentMillis;
+  }
   if (serialCmdA & ENGINE_RUNNING) {
     engineStarted = true;
   }
