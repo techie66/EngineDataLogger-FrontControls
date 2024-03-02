@@ -8,7 +8,7 @@ const uint8_t BTRX = 7;
 const uint8_t BTTX = 8;
 
 // Bluetooth "EN"
-#define BT_EN 9
+const uint8_t BT_EN = 9;
 
 // mcp2515 interrupt
 #define CAN_INT A1

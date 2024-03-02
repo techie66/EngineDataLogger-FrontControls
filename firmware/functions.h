@@ -335,3 +335,9 @@ void common_setup()
   
   watchdogSetup();
 }
+
+char* const byteToASCIIHEX(char* const buf, int size, byte b)
+{
+  snprintf(buf, size, "%.2x ", b);
+  return buf;
+}

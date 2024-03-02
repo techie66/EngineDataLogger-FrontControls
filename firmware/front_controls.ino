@@ -48,12 +48,14 @@
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <Wire.h>
+
 #include <mcp2515_can.h>
 #include <NeoSWSerial.h>
+
 #include "wdt.h"
 #include "pins.h"
 #include "functions.h"
-
+#include "ATCommands.h"
 
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
@@ -65,15 +67,23 @@ uint8_t serialCmdA = 0; // Extra Input, used for overrides C
 uint8_t receivedCmdD;
 uint8_t receivedCmdC;
 bool powerOn = false;
+bool monitor_canbus = false;
+bool igUnlocked = false;
 NeoSWSerial BTSerial(BTTX, BTRX); // RX, TX (TX->RX)
 int yaw;
 const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
 
 #define BTPOWER 1
+//#define FR_DEBUG
 #define FC_CMD_ID 0x226
+#define UNLOCK_ID 0x267
 #define IMU_POS_ID 0x1CECFF80
 #define OBD_ADDRESS 0x7EA
+
+#define AT_WORKING_BUFFER_SIZE 255
+
+ATCommands AT;
 
 /********OUTPUTS***************
 Left
@@ -108,6 +118,17 @@ const uint8_t ENGINE_RUNNING = B10000000;       // serialCmdA
 
 //ADD MORE HERE
 
+/**
+ * @brief recvCmd
+ * Read incoming commands and respond/act accordingly.
+ *   Originally written for commands over serial, this now
+ *   handles getting CAN packets and responding to requests.
+ *   Does not handle commands from bluetooth serial. (ATCommands)
+ *   Other CAN packets (ie periodic) are sent elsewhere
+ *   see: at_sh_write(), sendData(), AT.update()
+ * @param none
+ * @return void
+*/
 void recvCmd() {
   // read CMD_SIZE command from serial(USB)
   // TODO start and stop chars, length?
@@ -175,8 +196,15 @@ void recvCmd() {
     static unsigned long CanId=0;
     byte CanLen;
     byte CanBuf[8];
-    CAN.readMsgBuf(&CanLen,(byte*)&CanBuf);
+    byte canReadRet = CAN.readMsgBuf(&CanLen,(byte*)&CanBuf);
     CanId = CAN.getCanId();
+#ifdef FR_DEBUG
+    unsigned char stmp[3] = {0x11, 0x22};
+    stmp[0] = canReadRet;
+    stmp[1] = CanId >> 8;
+    stmp[2] = CanId;
+    CAN.sendMsgBuf(0x2AA, 0, 3, stmp);
+#endif
     if ( CanId == FC_CMD_ID ) {
       serialCmdA = CanBuf[3]; // Overrides for PINC
       lastMillis = currentMillis;
@@ -192,12 +220,36 @@ void recvCmd() {
           _response[2] = obd_pid;
           _response[3] = 0;
           _response[4] = LEFT_ON | RIGHT_ON << 1 | HIGH_BEAMS_ON << 2;
+          // Purposely decided not to forward this packet to UART in monitor mode
           CAN.sendMsgBuf(OBD_ADDRESS, 0, 8, _response);
         }
       }
     }
     if (CanId == IMU_POS_ID ) {
       yaw = ((CanBuf[3] + (((int)CanBuf[4]&0x001F)<<8))/10) - 360;
+    }
+
+    if (CanId == UNLOCK_ID ) {
+      if (CanBuf[0] == 0x13 && CanBuf[1] == 0xAF && CanBuf[2] == 0xB3 && CanBuf[3] == 0x22
+          && CanBuf[4] == 0x87 && CanBuf[5] == 0x8E && CanBuf[6] == 0xBC && CanBuf[7] == 0x1F) {
+        igUnlocked = true;
+      } else {
+        igUnlocked = false;
+      }
+    }
+
+    if (monitor_canbus) {
+      char bt_can_buf[10];
+      snprintf(bt_can_buf, sizeof(bt_can_buf), "%.3lx", CanId);
+      BTSerial.print(bt_can_buf);
+      BTSerial.print(" ");
+      snprintf(bt_can_buf, sizeof(bt_can_buf), "%.2x", CanLen);
+      BTSerial.print(bt_can_buf);
+      BTSerial.print(" ");
+      for (int i=0;i<CanLen;i++) {
+        BTSerial.print(byteToASCIIHEX(bt_can_buf, sizeof(bt_can_buf), CanBuf[i]));
+      }
+      BTSerial.println();
     }
   }
   // This is an override condition. The logic is that system voltages above 14V
@@ -252,6 +304,15 @@ void sendData() {
 	stmp[2] = uint16_t(systemVoltage*100);
 	stmp[3] = uint16_t(systemVoltage*100) >> 8;
 	CAN.sendMsgBuf(0x260, 0, 4, stmp);
+  if (monitor_canbus) {
+    char bt_can_buf[10];
+    BTSerial.print("260 04 ");
+    for (int i=0;i<4;i++) {
+      BTSerial.print(byteToASCIIHEX(bt_can_buf, sizeof(bt_can_buf), stmp[i]));
+    }
+    BTSerial.println();
+  }
+
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
     Serial.write(inputCmdC);
@@ -327,6 +388,7 @@ void enableStart() {
 #else
    // TODO
    // startenable is now the actual starter
+   // possible use for remote start or similair
    // killOutPin
 
 	if ( (KILL_ON) && powerOn ) {
@@ -376,12 +438,12 @@ void hlMode() {
 void mainPower() {
   static unsigned long powerOffTimer = 0;
   static boolean powerOffBegin = false;
-  if (BTConnected) {
+  if (BTConnected && igUnlocked) {
     digitalWrite(mainOutPin, HIGH);
     digitalWrite(auxOutPin, HIGH);
     powerOffBegin = false;
   }
-  else if (!BTConnected && !(serialCmdA & ENGINE_RUNNING) ) {
+  else if ((!BTConnected && !(serialCmdA & ENGINE_RUNNING) ) || !igUnlocked) {
     if (powerOffBegin) {
       if (millis() > (powerOffTimer + POWER_DOWN_DELAY) ) {
         digitalWrite(mainOutPin, LOW);
@@ -395,7 +457,7 @@ void mainPower() {
   }
 }
 
-void doMyCmd() {// FIX
+void doMyCmd() {
   // Hack to pretend that engine is running
   //serialCmdA |= B10000000;
   
@@ -464,6 +526,107 @@ void autoCancelBlinkers() {
   return;
 }
 
+/**
+ * @brief at_reset
+ * handle ATZ and other commands by returning OK\r>
+ * @param sender
+ * @return true
+ * @return false
+*/
+bool at_reset(ATCommands *sender)
+{
+  sender->serial->println("OK");
+  sender->serial->println(">");
+  return true;
+}
+
+/**
+ * @brief at_ma
+ * Put device into CAN monitor Mode
+ *   While in monitor mode, all CAN packets are forwarded from
+ *   CAN->UART(recvCmd()). Any input on UART cancels this mode (loop())
+ * @param sender
+ * @return true
+ * @return false
+*/
+bool at_ma(ATCommands *sender)
+{
+  monitor_canbus = true;
+  return true;
+}
+
+/**
+ * @brief at_sh_write
+ * Forward CAN packet from UART->CAN
+ *   <atsh> gives the ID and waits for confirmation before sending data.
+ *   Data is variable length
+ * @param sender
+ * @return true
+ * @return false
+*/
+bool at_sh_write(ATCommands *sender)
+{
+  String strCanId = sender->next();
+  unsigned long canId = 0;
+  unsigned int canDLC = 0;
+  canId = strtoul(strCanId.c_str(),NULL,16);
+
+  sender->serial->println("OK");
+  sender->serial->println(">");
+
+  while (!sender->serial->available()) {}
+
+  String strCanData = sender->serial->readStringUntil('\r');
+  unsigned int canDataBegin = 0;
+  int canDataEnd = 0;
+  byte canData[8];
+  for (unsigned int i=0;i<sizeof(canData);i++) {
+    if (canDataBegin < strCanData.length()) {
+      canDataEnd = strCanData.indexOf(' ',canDataBegin);
+    } else break;
+    if (canDataEnd < 0 && canDataBegin < strCanData.length() ) {
+      canDataEnd = strCanData.length();
+    }
+    if (canDataEnd > 0 ) {
+      unsigned long convTemp = strtoul(strCanData.substring(canDataBegin,canDataEnd).c_str(),NULL,16);
+      if ( convTemp < 256 ) {
+        canData[i] = convTemp;
+        canDLC = i + 1;
+      }
+      canDataBegin = canDataEnd+1;
+    } else break;
+  }
+  bool canExt = canId > 0x000007FF ? 1:0;
+  CAN.sendMsgBuf(canId,canExt,canDLC,canData);
+  sender->serial->println("OK");
+  sender->serial->println(">");
+  return true;
+}
+
+// declare the commands in an array to be passed during initialization
+/**
+****Ignored, but responded to****
+atz     Initialization
+stp31   Set CAN format to ISO 11898, 11-bit Tx, 500kbps, var DLC
+stcmm1  Acknowledge CAN packets in monitor mode
+ath1    Enable headers on UART
+ate0    Disable echo on UART
+****Processed****
+stma    Go into monitor mode. Forward all CAN packets on UART
+stop    Used to stop monitor mode
+atsh    UART->CAN sets header, followed by data bytes
+*/
+static at_command_t commands[] = {
+  {"z", at_reset, NULL, NULL, NULL},
+  {"p31", at_reset, NULL, NULL, NULL},
+  {"cmm1", at_reset, NULL, NULL, NULL},
+  {"h1", at_reset, NULL, NULL, NULL},
+  {"e0", at_reset, NULL, NULL, NULL},
+  {"ma", at_ma, NULL, NULL, NULL},
+  {"op", at_reset, NULL, NULL, NULL},
+  {"sh", NULL, NULL, NULL, at_sh_write}, // atsh 'CANID'
+};
+
 ISR(INT0_vect) {
   brakeStart = true;
   mcpB |= brakeOutPin;
@@ -476,17 +639,18 @@ ISR(INT1_vect) {
 void setup() {
   Serial.begin(115200);
   common_setup(); // functions.h
-  /*
+
   BTSerial.begin(9600);
-  BTSerial.println("AT+SLEEP\r\n");
-  */
 
   //allRelaysOff();
 
   pinMode(mainOutPin, OUTPUT);
   pinMode(auxOutPin, OUTPUT);
 
-  //Serial.println("Startup Complete!");
+  AT.begin(&BTSerial, commands, sizeof(commands), AT_WORKING_BUFFER_SIZE,"\r");
+  unsigned char stmp[2] = {0x11, 0x11};
+  CAN.sendMsgBuf(0xDA, 0, 1, stmp);
+  Serial.println("Startup Complete!");
 }
 
 void loop() {
@@ -495,6 +659,14 @@ void loop() {
   static boolean sleepCountdown = false;
   readSensors();
   autoCancelBlinkers();
+
+  if (BTSerial.available()) {
+    monitor_canbus = false;
+    AT_COMMANDS_ERRORS at_ret = AT.update();
+    if (at_ret != AT_COMMANDS_SUCCESS) {
+      CAN.sendMsgBuf(0x0BB, 0, 1, (byte*)&at_ret);
+    }
+  }
   recvCmd();
   inputCmdC = convert_to_inputCmdC();
   inputCmdD = convert_to_inputCmdD();
@@ -523,21 +695,5 @@ void loop() {
     sleepCountdown = false;
     powerOn = true;
   }
-
-  /*static bool oneshot=false;
-  if (!BTConnected && oneshot) {
-    BTSerial.write("AT+SLEEP\r\n");
-    oneshot=false;
-  }
-  if (BTConnected) {
-    oneshot=true;
-  }
-  */
-  /*if (BTSerial.available()) {
-    String BTString = BTSerial.readStringUntil('\n');
-    unsigned char stmp[10] = {0,0,0,0,0,0,0,0,0,0};
-    BTString.toCharArray(stmp,9);
-    CAN.sendMsgBuf(0xAA,0,8,stmp);
-  }*/
 }
 
