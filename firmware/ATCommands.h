@@ -14,7 +14,7 @@
 */
 #include <Arduino.h>
 
-#define AT_COMMANDS_DEBUG
+//#define AT_COMMANDS_DEBUG
 
 #ifndef __AT_COMMANDS_H__
 #define __AT_COMMANDS_H__

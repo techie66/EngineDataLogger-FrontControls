@@ -33,6 +33,7 @@
 
 #include <TinyGPSPlus.h>
 #include "gps.h" // CAN DBC functions
+#define IMU_RATE_LIMIT 200 //rate limit in milliseconds for IMU
 
 TinyGPSPlus gps;
 TinyGPSCustom VDOP(gps,"GPGSA", 17);
@@ -127,45 +128,48 @@ void loop() {
   unsigned char can_data[8];
   // read a packet from FIFO
   
-  if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+  static unsigned long last_imu = 0;
+  if ( last_imu + IMU_RATE_LIMIT < millis() ) {
+    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
 
-    // display Euler angles in degrees
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    mpu.dmpGetGravity(&gravity, &q);
-    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-    uint16_t roll = ( (ypr[2] * 180 / M_PI) + 180 ) * 10;
-    uint16_t pitch = ( (ypr[1] * 180 / M_PI) + 180 ) * 10;
-    uint16_t yaw = ( (ypr[0] * 180 / M_PI) + 360 ) * 10;
-    // Send CAN Packets
-    can_data[0] = (uint8_t)roll;
-    can_data[1] = (uint8_t)(roll >> 8) & 0x0F;
-    can_data[1] |= (uint8_t)((pitch << 4) & 0xF0);
-    can_data[2] = (uint8_t)(pitch >> 4);
-    can_data[3] = (uint8_t)(yaw);
-    can_data[4] = (uint8_t)(yaw >> 8);
-    CAN.sendMsgBuf(0x1cecff80, CAN_EXTID, 5, can_data);
-    for (int i=0;i<8;i++)
-      can_data[i]=0;
+      // display Euler angles in degrees
+      mpu.dmpGetQuaternion(&q, fifoBuffer);
+      mpu.dmpGetGravity(&gravity, &q);
+      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+      uint16_t roll = ( (ypr[2] * 180 / M_PI) + 180 ) * 10;
+      uint16_t pitch = ( (ypr[1] * 180 / M_PI) + 180 ) * 10;
+      uint16_t yaw = ( (ypr[0] * 180 / M_PI) + 360 ) * 10;
+      // Send CAN Packets
+      can_data[0] = (uint8_t)roll;
+      can_data[1] = (uint8_t)(roll >> 8) & 0x0F;
+      can_data[1] |= (uint8_t)((pitch << 4) & 0xF0);
+      can_data[2] = (uint8_t)(pitch >> 4);
+      can_data[3] = (uint8_t)(yaw);
+      can_data[4] = (uint8_t)(yaw >> 8);
+      CAN.sendMsgBuf(0x1cecff80, CAN_EXTID, 5, can_data);
+      for (int i=0;i<8;i++)
+        can_data[i]=0;
 
-    // display real acceleration, adjusted to remove gravity
-    mpu.dmpGetAccel(&aa, fifoBuffer);
-    mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-    uint16_t accX = ( 1000 * 20 ) + ( aaReal.x * (long)1000 * 9.80665 ) / 16384.0;
-    uint16_t accY = ( 1000 * 20 ) + ( aaReal.y * (long)1000 * 9.80665 ) / 16384.0;
-    uint16_t accZ = ( 1000 * 20 ) + ( aaReal.z * (long)1000 * 9.80665 ) / 16384.0;
-    // Send CAN Packets
-    can_data[0] = (uint8_t)(accX);
-    can_data[1] = (uint8_t)(accX >> 8);
-    can_data[2] = (uint8_t)(accY);
-    can_data[3] = (uint8_t)(accY >> 8);
-    can_data[4] = (uint8_t)(accZ);
-    can_data[5] = (uint8_t)(accZ >> 8);
-    CAN.sendMsgBuf(0x1cecff81, CAN_EXTID, 6, can_data);
-    for (int i=0;i<8;i++)
-      can_data[i]=0;
+      // display real acceleration, adjusted to remove gravity
+      mpu.dmpGetAccel(&aa, fifoBuffer);
+      mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+      uint16_t accX = ( 1000 * 20 ) + ( aaReal.x * (long)1000 * 9.80665 ) / 16384.0;
+      uint16_t accY = ( 1000 * 20 ) + ( aaReal.y * (long)1000 * 9.80665 ) / 16384.0;
+      uint16_t accZ = ( 1000 * 20 ) + ( aaReal.z * (long)1000 * 9.80665 ) / 16384.0;
+      // Send CAN Packets
+      can_data[0] = (uint8_t)(accX);
+      can_data[1] = (uint8_t)(accX >> 8);
+      can_data[2] = (uint8_t)(accY);
+      can_data[3] = (uint8_t)(accY >> 8);
+      can_data[4] = (uint8_t)(accZ);
+      can_data[5] = (uint8_t)(accZ >> 8);
+      CAN.sendMsgBuf(0x1cecff81, CAN_EXTID, 6, can_data);
+      for (int i=0;i<8;i++)
+        can_data[i]=0;
 
+    }
+    last_imu = millis();
   }
-  
 
   // GPS stuff
   struct gps_gps_time_t st_time;
@@ -181,76 +185,80 @@ void loop() {
     gps.encode(readByte);
     Serial.write(readByte);
   }
-  
-  if ( (gps.date.month() != 0) && gps.time.isUpdated() ){
-    // Send Time Frame
-    st_time.day = gps.date.day();
-    st_time.month = gps.date.month();
-    st_time.year = gps.date.year();
-    st_time.hour = gps.time.hour();
-    st_time.minute = gps.time.minute();
-    st_time.second = gps.time.second();
-    int status = gps_gps_time_pack(can_data,&st_time,sizeof(can_data));
-    if (status > 0) {
-      CAN.sendMsgBuf(GPS_GPS_TIME_FRAME_ID, CAN_EXTID, 8, can_data);
-      for (int i=0;i<8;i++)
-        can_data[i]=0;
+ 
+  static unsigned long last_gps = 0;
+  if ( last_gps + IMU_RATE_LIMIT < millis() ) {
+    if ( (gps.date.month() != 0) && gps.time.isUpdated() ){
+      // Send Time Frame
+      st_time.day = gps.date.day();
+      st_time.month = gps.date.month();
+      st_time.year = gps.date.year();
+      st_time.hour = gps.time.hour();
+      st_time.minute = gps.time.minute();
+      st_time.second = gps.time.second();
+      int status = gps_gps_time_pack(can_data,&st_time,sizeof(can_data));
+      if (status > 0) {
+        CAN.sendMsgBuf(GPS_GPS_TIME_FRAME_ID, CAN_EXTID, 8, can_data);
+        for (int i=0;i<8;i++)
+          can_data[i]=0;
+      }
     }
-  }
 
-  if ( gps.location.isValid() && gps.location.isUpdated() ){
-    // Send Loc Frame
-    st_loc.lat_decimal_degrees = gps_gps_loc_lat_decimal_degrees_encode(gps.location.lat());
-    st_loc.long_decimal_degrees = gps_gps_loc_long_decimal_degrees_encode(gps.location.lng());
-    int status = gps_gps_loc_pack(can_data,&st_loc,sizeof(can_data));
-    if (status > 0) {
-      CAN.sendMsgBuf(GPS_GPS_LOC_FRAME_ID, CAN_EXTID, 8, can_data);
+    if ( gps.location.isValid() && gps.location.isUpdated() ){
+      // Send Loc Frame
+      st_loc.lat_decimal_degrees = gps_gps_loc_lat_decimal_degrees_encode(gps.location.lat());
+      st_loc.long_decimal_degrees = gps_gps_loc_long_decimal_degrees_encode(gps.location.lng());
+      int status = gps_gps_loc_pack(can_data,&st_loc,sizeof(can_data));
+      if (status > 0) {
+        CAN.sendMsgBuf(GPS_GPS_LOC_FRAME_ID, CAN_EXTID, 8, can_data);
+      }
+      // Send Nav Frame
+      st_nav.speed = gps_gps_nav_speed_encode(gps.speed.kmph());
+      st_nav.heading = gps_gps_nav_heading_encode(gps.course.deg());
+      st_nav.altitude = gps_gps_nav_altitude_encode(gps.altitude.meters());
+      status = gps_gps_nav_pack(can_data,&st_nav,sizeof(can_data));
+      if (status > 0) {
+        CAN.sendMsgBuf(GPS_GPS_NAV_FRAME_ID, CAN_EXTID, 8, can_data);
+        for (int i=0;i<8;i++)
+          can_data[i]=0;
+      }
     }
-    // Send Nav Frame
-    st_nav.speed = gps_gps_nav_speed_encode(gps.speed.kmph());
-    st_nav.heading = gps_gps_nav_heading_encode(gps.course.deg());
-    st_nav.altitude = gps_gps_nav_altitude_encode(gps.altitude.meters());
-    status = gps_gps_nav_pack(can_data,&st_nav,sizeof(can_data));
-    if (status > 0) {
-      CAN.sendMsgBuf(GPS_GPS_NAV_FRAME_ID, CAN_EXTID, 8, can_data);
-      for (int i=0;i<8;i++)
-        can_data[i]=0;
-    }
-  }
 
-  if ( SatView.isUpdated() ) {
-    st_stat.active_satellites = 0;
-    st_stat.type = 0;
-    st_stat.visible_satellites = 0;
-    st_stat.hdop = 0;
-    st_stat.pdop = 0;
-    st_stat.vdop = 0;
-    if ( PDOP.isValid() ) {
-      String _pdop = PDOP.value();
-      st_stat.pdop = gps_gps_stat_pdop_encode(_pdop.toDouble());
+    if ( SatView.isUpdated() ) {
+      st_stat.active_satellites = 0;
+      st_stat.type = 0;
+      st_stat.visible_satellites = 0;
+      st_stat.hdop = 0;
+      st_stat.pdop = 0;
+      st_stat.vdop = 0;
+      if ( PDOP.isValid() ) {
+        String _pdop = PDOP.value();
+        st_stat.pdop = gps_gps_stat_pdop_encode(_pdop.toDouble());
+      }
+      if ( VDOP.isValid() ) {
+        String _vdop = VDOP.value();
+        st_stat.vdop = gps_gps_stat_vdop_encode(_vdop.toDouble());
+      }
+      if ( GPSFixType.isValid() ) {
+        String _type = GPSFixType.value();
+        st_stat.type = _type.toInt();
+      }
+      if ( SatView.isValid() ) {
+        String _inview = SatView.value();
+        st_stat.visible_satellites = _inview.toInt();
+      }
+      if ( gps.satellites.isValid() )
+        st_stat.active_satellites = gps.satellites.value();
+      if ( gps.hdop.isValid() )
+        st_stat.hdop = gps.hdop.value() / 10;
+      int status = gps_gps_stat_pack(can_data,&st_stat,sizeof(can_data));
+      if (status > 0) {
+        CAN.sendMsgBuf(GPS_GPS_STAT_FRAME_ID, CAN_EXTID, 8, can_data);
+        for (int i=0;i<8;i++)
+          can_data[i]=0;
+      }
     }
-    if ( VDOP.isValid() ) {
-      String _vdop = VDOP.value();
-      st_stat.vdop = gps_gps_stat_vdop_encode(_vdop.toDouble());
-    }
-    if ( GPSFixType.isValid() ) {
-      String _type = GPSFixType.value();
-      st_stat.type = _type.toInt();
-    }
-    if ( SatView.isValid() ) {
-      String _inview = SatView.value();
-      st_stat.visible_satellites = _inview.toInt();
-    }
-    if ( gps.satellites.isValid() )
-      st_stat.active_satellites = gps.satellites.value();
-    if ( gps.hdop.isValid() )
-      st_stat.hdop = gps.hdop.value() / 10;
-    int status = gps_gps_stat_pack(can_data,&st_stat,sizeof(can_data));
-    if (status > 0) {
-      CAN.sendMsgBuf(GPS_GPS_STAT_FRAME_ID, CAN_EXTID, 8, can_data);
-      for (int i=0;i<8;i++)
-        can_data[i]=0;
-    }
+    last_gps = millis();
   }
 }
 

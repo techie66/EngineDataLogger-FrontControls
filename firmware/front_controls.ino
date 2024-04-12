@@ -57,6 +57,15 @@
 #include "functions.h"
 #include "ATCommands.h"
 
+#define BTPOWER 1
+#define BT_HW_SERIAL
+//#define FR_DEBUG
+#define FC_CMD_ID 0x226
+#define UNLOCK_ID 0x267
+#define IMU_POS_ID 0x1CECFF80
+#define OBD_ADDRESS 0x7EA
+#define AT_WORKING_BUFFER_SIZE 255
+
 uint8_t inputCmdD; // pins 0-7
 uint8_t inputCmdB; // pins 8-13 (two high bits unusable) (all outputs)
 uint8_t inputCmdC; // analog pins A0-A5 (two high bits unuseable ATMega328p)
@@ -69,19 +78,14 @@ uint8_t receivedCmdC;
 bool powerOn = false;
 bool monitor_canbus = false;
 bool igUnlocked = false;
+#ifndef BT_HW_SERIAL
 NeoSWSerial BTSerial(BTTX, BTRX); // RX, TX (TX->RX)
+#else
+  #define BTSerial Serial
+#endif
 int yaw;
 const uint8_t mainOutPin = 6;
 const uint8_t auxOutPin = A3;
-
-#define BTPOWER 1
-//#define FR_DEBUG
-#define FC_CMD_ID 0x226
-#define UNLOCK_ID 0x267
-#define IMU_POS_ID 0x1CECFF80
-#define OBD_ADDRESS 0x7EA
-
-#define AT_WORKING_BUFFER_SIZE 255
 
 ATCommands AT;
 
@@ -109,7 +113,7 @@ voltage
 ******************************/
 
 const uint8_t CMD_SIZE = 4;  // WIP see doCmd()
-const uint16_t SERIAL_OUT_RATE = 50;
+const uint16_t SERIAL_OUT_RATE = 200;
 const unsigned long SERIAL_EXPIRE = 4000;
 const unsigned long POWER_DOWN_DELAY = 2000;
 
@@ -131,26 +135,24 @@ const uint8_t ENGINE_RUNNING = B10000000;       // serialCmdA
 */
 void recvCmd() {
   // read CMD_SIZE command from serial(USB)
-  // TODO start and stop chars, length?
-  static uint8_t receivedByte[(CMD_SIZE+1)];
-  static uint8_t numBytesRecv = (CMD_SIZE+1);
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
-  boolean goodRead = false;
 
   if (currentMillis > lastMillis + SERIAL_EXPIRE) {
     serialCmdD = 0;
     serialCmdB = 0;
     serialCmdC = 0;
-    serialCmdA = 0;
+    serialCmdA &= ENGINE_RUNNING; // Don' ENGINE_RUNNING automatically, assume still running
     lastMillis = currentMillis;
   }
 
+#ifndef BT_HW_SERIAL
+  static uint8_t receivedByte[(CMD_SIZE+1)];
+  static uint8_t numBytesRecv = (CMD_SIZE+1);
+  boolean goodRead = false;
   while (Serial.available() > 0) {
     if (numBytesRecv < CMD_SIZE) {
       receivedByte[numBytesRecv] = Serial.read();
-      //Serial.print("ReadByte ");
-      //Serial.println(numBytesRecv);
       numBytesRecv++;
     }
     else if (numBytesRecv == CMD_SIZE) {
@@ -158,18 +160,12 @@ void recvCmd() {
         // End Character. Presumably good data
         goodRead = true;
         numBytesRecv++;
-        //Serial.println("GoodRead");
         break;
-      }
-      else {
-        //Serial.println("Not a Z");
-        //numBytesRecv++;
       }
     }
     else if (numBytesRecv > CMD_SIZE) {
       if ((char)Serial.read() == 'A') {
         // Start Character
-        //Serial.println("Start");
         numBytesRecv = 0;
       }
     }
@@ -191,8 +187,12 @@ void recvCmd() {
     // Set Time of last received CMD
     lastMillis = currentMillis;
   }
-  
-  while (CAN.checkReceive() == CAN_MSGAVAIL) {
+#endif
+
+  int loopLimit = 0;
+  while (CAN.checkReceive() == CAN_MSGAVAIL && loopLimit < 1) {
+    //wdt_reset();
+    loopLimit++;
     static unsigned long CanId=0;
     byte CanLen;
     byte CanBuf[8];
@@ -238,12 +238,9 @@ void recvCmd() {
       }
     }
 
-    if (monitor_canbus) {
+    if (monitor_canbus && CanId < 0x7DF) {
       char bt_can_buf[10];
       snprintf(bt_can_buf, sizeof(bt_can_buf), "%.3lx", CanId);
-      BTSerial.print(bt_can_buf);
-      BTSerial.print(" ");
-      snprintf(bt_can_buf, sizeof(bt_can_buf), "%.2x", CanLen);
       BTSerial.print(bt_can_buf);
       BTSerial.print(" ");
       for (int i=0;i<CanLen;i++) {
@@ -251,13 +248,14 @@ void recvCmd() {
       }
       BTSerial.println();
     }
+    lastMillis = currentMillis;
   }
   // This is an override condition. The logic is that system voltages above 14V
   //  indicate the engine is running, and we'd like to act accordingly
   //  i.e. keep headlights on even if the CAN bus stops working correctly.
   if (systemVoltage > 14) {
     serialCmdA |= ENGINE_RUNNING;
-    lastMillis = currentMillis;
+    //lastMillis = currentMillis;
   }
   if (serialCmdA & ENGINE_RUNNING) {
     engineStarted = true;
@@ -289,6 +287,7 @@ void sendData() {
   static float lastVoltage;
   unsigned long currentMillis = millis();
   static unsigned long lastMillis = 0;
+  static unsigned long lastBTMillis = 0;
 
   if ((inputCmdD == lastCmdD) && (inputCmdC == lastCmdC) && (systemVoltage == lastVoltage) && (currentMillis < (lastMillis + SERIAL_EXPIRE))) {
     //Nothing, everything is the same, no need to repeat ourselves
@@ -305,50 +304,25 @@ void sendData() {
 	stmp[3] = uint16_t(systemVoltage*100) >> 8;
 	CAN.sendMsgBuf(0x260, 0, 4, stmp);
   if (monitor_canbus) {
-    char bt_can_buf[10];
-    BTSerial.print("260 04 ");
-    for (int i=0;i<4;i++) {
-      BTSerial.print(byteToASCIIHEX(bt_can_buf, sizeof(bt_can_buf), stmp[i]));
+    if (currentMillis >= (lastBTMillis + ( SERIAL_EXPIRE / 4 ))) { // Limit BTSerial rate since it's slow no matter what
+      char bt_can_buf[10];
+      BTSerial.print("260 ");
+      for (int i=0;i<4;i++) {
+        BTSerial.print(byteToASCIIHEX(bt_can_buf, sizeof(bt_can_buf), stmp[i]));
+      }
+      BTSerial.println();
+      lastBTMillis = currentMillis;
+
     }
-    BTSerial.println();
   }
 
+#ifndef BT_HW_SERIAL
     // Send sensor/state data over serial(USB)
     Serial.write(inputCmdD);
     Serial.write(inputCmdC);
     Serial.write((byte *) &systemVoltage, 4);
     Serial.println("");
-    
-    // Hack to output ASCII version
-/*    uint8_t copyD = receivedCmdD;
-    uint8_t copyC = receivedCmdC;
-  
-    Serial.println(systemVoltage);
-    Serial.print("receivedCmdD:");
-    for(int i=0;i<8;i++) {
-      if(copyD&B10000000){
-        Serial.print("1");
-      }
-      else {
-        Serial.print("0");
-      }
-      copyD = copyD << 1;
-    }
-    Serial.println("");
-    Serial.print("receivedCmdC:");
-    for(int i=0;i<8;i++) {
-      if(copyC&B10000000){
-        Serial.print("1");
-      }
-      else {
-        Serial.print("0");
-      }
-      copyC = copyC << 1;
-    }
-    Serial.println("");
-    */
-    
-  
+#endif
   lastCmdD = inputCmdD;
   lastCmdC = inputCmdC;
   lastVoltage = systemVoltage;
@@ -446,6 +420,7 @@ void mainPower() {
   else if ((!BTConnected && !(serialCmdA & ENGINE_RUNNING) ) || !igUnlocked) {
     if (powerOffBegin) {
       if (millis() > (powerOffTimer + POWER_DOWN_DELAY) ) {
+        igUnlocked = false;
         digitalWrite(mainOutPin, LOW);
         digitalWrite(auxOutPin, LOW);
       }
@@ -598,6 +573,15 @@ bool at_sh_write(ATCommands *sender)
   }
   bool canExt = canId > 0x000007FF ? 1:0;
   CAN.sendMsgBuf(canId,canExt,canDLC,canData);
+  if (canId == UNLOCK_ID ) {
+    if (canData[0] == 0x13 && canData[1] == 0xAF && canData[2] == 0xB3 && canData[3] == 0x22
+        && canData[4] == 0x87 && canData[5] == 0x8E && canData[6] == 0xBC && canData[7] == 0x1F) {
+      igUnlocked = true;
+    } else {
+      igUnlocked = false;
+    }
+  }
+
   sender->serial->println("OK");
   sender->serial->println(">");
   return true;
@@ -639,33 +623,44 @@ ISR(INT1_vect) {
 void setup() {
   Serial.begin(115200);
   common_setup(); // functions.h
-
-  BTSerial.begin(9600);
+#ifndef BT_HW_SERIAL
+  BTSerial.begin(19200);
+#else
+  pinMode(BTTX,INPUT);
+  pinMode(BTRX,INPUT);
+#endif
 
   //allRelaysOff();
 
   pinMode(mainOutPin, OUTPUT);
   pinMode(auxOutPin, OUTPUT);
+  pinMode(BT_EN, OUTPUT);
+  digitalWrite(BT_EN,HIGH);
 
   AT.begin(&BTSerial, commands, sizeof(commands), AT_WORKING_BUFFER_SIZE,"\r");
   unsigned char stmp[2] = {0x11, 0x11};
   CAN.sendMsgBuf(0xDA, 0, 1, stmp);
+//#ifndef BT_HW_SERIAL
   Serial.println("Startup Complete!");
+//#endif
 }
 
 void loop() {
   wdt_reset();
-  static unsigned long sleepWaitStart = 0;
-  static boolean sleepCountdown = false;
   readSensors();
   autoCancelBlinkers();
 
   if (BTSerial.available()) {
     monitor_canbus = false;
+#ifdef FR_DEBUG
+    byte btByte= BTSerial.read();
+    CAN.sendMsgBuf(0x0BC, 0, 1, &btByte);
+#else
     AT_COMMANDS_ERRORS at_ret = AT.update();
     if (at_ret != AT_COMMANDS_SUCCESS) {
       CAN.sendMsgBuf(0x0BB, 0, 1, (byte*)&at_ret);
     }
+#endif
   }
   recvCmd();
   inputCmdC = convert_to_inputCmdC();
@@ -673,8 +668,12 @@ void loop() {
   doMyCmd();
   sendData();
 
-  if (systemVoltage < 7) {
+#ifndef FR_DEBUG
+  static unsigned long sleepWaitStart = 0;
+  static boolean sleepCountdown = false;
+  if (systemVoltage < 7 && !BTConnected ) {
     engineStarted = false;
+    serialCmdA &= (ENGINE_RUNNING ^ 0xFF); //force unset this flag even if comm dropped
     powerOn = false;
     if (sleepCountdown) {
       if (millis() > sleepWaitStart + SLEEP_DELAY) {
@@ -695,5 +694,6 @@ void loop() {
     sleepCountdown = false;
     powerOn = true;
   }
+#endif
 }
 
