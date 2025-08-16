@@ -338,6 +338,6 @@ void common_setup()
 
 char* const byteToASCIIHEX(char* const buf, int size, byte b)
 {
-  snprintf(buf, size, "%.2x ", b);
+  snprintf(buf, size, "%.2x", b);
   return buf;
 }
